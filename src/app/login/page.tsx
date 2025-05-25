@@ -5,12 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { login, saveToken } from "@/api/api";
+import { useRouter } from "next/navigation";  // import do router
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const router = useRouter();  // inicializa o router
 
   const handleLogin = async () => {
     setLoading(true);
@@ -26,7 +28,7 @@ export default function LoginPage() {
 
     if (data.token) {
       saveToken(data.token);
-      // redirecionar ou atualizar UI aqui, se quiser
+      router.push("/products");  // redireciona aqui
     }
 
     setLoading(false);
