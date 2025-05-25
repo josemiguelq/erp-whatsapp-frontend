@@ -10,7 +10,7 @@ export default function Sidebar() {
 
   const links = [
     { name: "Dashboard", href: "/dashboard" },
-    { name: "Produtos", href: "/produtos" },
+    { name: "Produtos", href: "/products" },
   ];
 
   return (
