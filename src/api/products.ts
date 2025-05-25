@@ -1,5 +1,6 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function fetchProducts(): Promise<any[]> {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
     const token = localStorage.getItem("token");

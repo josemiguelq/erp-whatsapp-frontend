@@ -26,6 +26,7 @@ export async function login(email: string, password: string): Promise<LoginRespo
     const errorData = await response.json();
     return {
       token: "",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       user: null as any,
       error: errorData.error || "Erro ao fazer login",
     };
