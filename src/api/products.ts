@@ -48,7 +48,7 @@ export async function searchProducts(q: string): Promise<any[]> {
     const token = localStorage.getItem("token");
   
     console.log(q)
-    const res = await fetch(`${API_URL}/api/products/search?q=${q}`, {
+    const res = await fetch(`${API_URL}/api/products/search/pos?q=${q}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
