@@ -47,3 +47,32 @@ export function getToken(): string | null {
 export function clearToken() {
   localStorage.removeItem("token");
 }
+
+export async function getUser(): Promise<any[]> {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+    const token = localStorage.getItem("token");
+  
+    const res = await fetch(`${API_URL}/api/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  
+    if (!res.ok) throw new Error("Erro ao buscar");
+    return res.json();
+  }
+
+  export async function logout(): Promise<any[]> {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+    const token = localStorage.getItem("token");
+  
+    const res = await fetch(`${API_URL}/api/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  
+    if (!res.ok) throw new Error("Erro ao buscar");
+    return res.json();
+  }
+

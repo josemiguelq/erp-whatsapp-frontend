@@ -32,3 +32,13 @@ export async function fetchProducts(): Promise<any[]> {
   
     return res.json();
   }
+
+export async function getProductById(id: string) {
+  const token = localStorage.getItem("token");
+  const response = await fetch(`${API_URL}/api/products/${id}`, {
+    headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },});
+  return response.json();
+}

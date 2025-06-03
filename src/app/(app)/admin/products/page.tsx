@@ -6,6 +6,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
 type Product = {
+  _id: string;
   model: string;
   type: string;
   type_labels?: string[];
@@ -67,6 +68,7 @@ export default function ProductsPage() {
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent side="right" className="w-[400px]">
           <h2 className="text-lg font-semibold mb-2">{selectedProduct?.model}</h2>
+          <p><strong>Tipo:</strong> {selectedProduct?._id}</p>
           <p><strong>Tipo:</strong> {selectedProduct?.type}</p>
           <p><strong>Estoque:</strong> {selectedProduct?.stock}</p>
           <div className="mt-2">
