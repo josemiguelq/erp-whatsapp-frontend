@@ -42,3 +42,18 @@ export async function getProductById(id: string) {
       },});
   return response.json();
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function searchProducts(q: string): Promise<any[]> {
+    const token = localStorage.getItem("token");
+  
+    console.log(q)
+    const res = await fetch(`${API_URL}/api/search?q=${q}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  
+    if (!res.ok) throw new Error("Erro ao buscar produtos");
+    return res.json();
+  }
