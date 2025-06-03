@@ -6,7 +6,6 @@ import { getProductById } from "@/api/products";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-// Estrutura para o carrinho no localStorage
 function addToCart(item: any) {
   const cart = JSON.parse(localStorage.getItem("cart") || "[]");
   cart.push(item);
@@ -19,6 +18,7 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [selectedVariation, setSelectedVariation] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -28,10 +28,20 @@ export default function ProductDetailPage() {
       const data = await getProductById(id as string);
       setProduct(data);
       setLoading(false);
+
+      // Define a imagem padrão ao carregar o produto
+      const defaultImage = data?.variations?.[0]?.images?.[0] || null;
+      setSelectedImage(defaultImage);
     }
 
     fetchProduct();
   }, [id]);
+
+  useEffect(() => {
+    // Atualiza a imagem principal ao trocar de variação
+    const variationImages = product?.variations?.[selectedVariation]?.images;
+    setSelectedImage(variationImages?.[0] || null);
+  }, [selectedVariation, product]);
 
   if (loading) return <p className="p-6">Carregando...</p>;
   if (!product) return <p className="p-6">Produto não encontrado</p>;
@@ -57,31 +67,35 @@ export default function ProductDetailPage() {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex flex-col md:flex-row gap-8">
-        {/* Imagens da variação */}
-        <div className="w-full md:w-1/2 space-y-2">
+        {/* Galeria de imagens */}
+        <div className="w-full md:w-1/2 space-y-4">
           <img
-            src={variation.images?.[0] || "https://via.placeholder.com/400"}
+            src={selectedImage || "https://via.placeholder.com/400"}
             alt={product.model}
-            className="rounded-xl w-full object-cover"
+            className="rounded-xl w-full h-[400px] object-cover"
           />
+
           <div className="flex gap-2 overflow-x-auto">
             {variation.images?.map((img: string, i: number) => (
               <img
                 key={i}
                 src={img}
                 alt={`Imagem ${i + 1}`}
-                className="w-20 h-20 object-cover border rounded-md"
+                onClick={() => setSelectedImage(img)}
+                className={`w-20 h-20 object-cover border rounded-md cursor-pointer ${
+                  selectedImage === img ? "ring-2 ring-blue-500" : ""
+                }`}
               />
             ))}
           </div>
         </div>
 
-        {/* Detalhes */}
+        {/* Detalhes do produto */}
         <div className="w-full md:w-1/2 space-y-4">
           <h1 className="text-2xl font-bold">{product.model}</h1>
           <p className="text-gray-600">{product.type}</p>
 
-          {/* Variações */}
+          {/* Seleção de variação */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Opções:</label>
             <div className="flex flex-wrap gap-2">

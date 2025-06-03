@@ -36,7 +36,7 @@ export default function StoreHader() {
   return (      
       <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/products" className="text-xl font-bold text-red-600">
+          <Link href="/" className="text-xl font-bold text-red-600">
             JoelExpress
           </Link>
 

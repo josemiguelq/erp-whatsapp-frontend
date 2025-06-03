@@ -55,7 +55,7 @@ export default function HomePage() {
                     className="w-full h-48 object-cover rounded-lg mb-3 cursor-pointer"
                     onClick={() => router.push(`/store/products/${product._id}`)}
                   />
-                  <h2 className="text-xl font-semibold">{product.model}</h2>
+                  <h2 className="text-xl font-semibold">{product.name}</h2>
                   <p className="text-sm text-gray-600">{product.type}</p>
 
                   <button
