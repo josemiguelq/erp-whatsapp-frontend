@@ -49,7 +49,7 @@ export function clearToken() {
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export async function getUser(): Promise<any[]> {
+export async function getUser(): Promise<any> {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
     const token = localStorage.getItem("token");
   
