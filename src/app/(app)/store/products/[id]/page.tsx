@@ -101,7 +101,9 @@ export default function ProductDetailPage() {
           <div className="space-y-2">
             <label className="text-sm font-medium">Opções:</label>
             <div className="flex flex-wrap gap-2">
-              {product.variations.map((v: any, index: number) => (
+              {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              product.variations.map((v: any, index: number) => (
                 <button
                   key={index}
                   onClick={() => setSelectedVariation(index)}

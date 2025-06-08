@@ -8,6 +8,7 @@ import StoreHeader from "@/components/layout/StoreHeader";
 import { fetchProducts } from "@/api/products";
 
 export default function HomePage() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
