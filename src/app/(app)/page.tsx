@@ -8,6 +8,7 @@ export default async function HomePage() {
     <div>
       <StoreHeader />
       <main className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         {products.map((product: any) => {
           const variation = product.variations?.[0];
           const imageUrl = variation?.images?.[0] || "/placeholder.png";

@@ -5,9 +5,8 @@ import { getUser, logout } from "@/api/api";
 import { useRouter } from "next/navigation";
 import StoreHader from "@/components/layout/StoreHeader";
 
-const categories = ["Módulos", "Telas", "Ferramentas"];
-
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [user, setUser] = useState<null | { name: string }>(null);
   const router = useRouter();
 
@@ -24,6 +23,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     fetchUser();
   }, []);
 
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const handleLogout = () => {
     logout(); // remove token do localStorage
     setUser(null);

@@ -48,6 +48,7 @@ export function clearToken() {
   localStorage.removeItem("token");
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export async function getUser(): Promise<any[]> {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
     const token = localStorage.getItem("token");
@@ -62,6 +63,7 @@ export async function getUser(): Promise<any[]> {
     return res.json();
   }
 
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   export async function logout(): Promise<any[]> {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
     const token = localStorage.getItem("token");
