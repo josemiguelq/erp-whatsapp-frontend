@@ -1,11 +1,6 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { ShoppingCart, User } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { getUser, logout } from "@/api/api";
 import { useRouter } from "next/navigation";
 import StoreHader from "@/components/layout/StoreHeader";
@@ -22,6 +17,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         const me = await getUser(); // Deve fazer GET /me com token
         if (me?.name) setUser(me);
       } catch (err) {
+        console.log(err)
         setUser(null); // Sem usuário
       }
     };
