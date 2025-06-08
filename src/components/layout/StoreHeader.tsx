@@ -21,6 +21,7 @@ export default function StoreHader() {
         const me = await getUser(); // Deve fazer GET /me com token
         if (me?.name) setUser(me);
       } catch (err) {
+        console.log(err);
         setUser(null); // Sem usuário
       }
     };

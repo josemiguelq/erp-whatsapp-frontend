@@ -6,6 +6,7 @@ import { getProductById } from "@/api/products";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function addToCart(item: any) {
   const cart = JSON.parse(localStorage.getItem("cart") || "[]");
   cart.push(item);
@@ -14,6 +15,7 @@ function addToCart(item: any) {
 
 export default function ProductDetailPage() {
   const { id } = useParams();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [product, setProduct] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedVariation, setSelectedVariation] = useState(0);
