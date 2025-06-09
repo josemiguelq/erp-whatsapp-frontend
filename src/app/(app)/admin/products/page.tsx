@@ -29,7 +29,8 @@ export default function ProductsPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await fetchProducts();
+        const token = localStorage.getItem("token");
+        const data = await fetchProducts(token);
         setProducts(data);
       } catch (err) {
         console.error(err);

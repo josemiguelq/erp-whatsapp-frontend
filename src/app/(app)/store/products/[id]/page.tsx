@@ -27,7 +27,8 @@ export default function ProductDetailPage() {
       if (!id) return;
 
       setLoading(true);
-      const data = await getProductById(id as string);
+      const token = localStorage.getItem("token");
+      const data = await getProductById(id as string, token);
       setProduct(data);
       setLoading(false);
 

@@ -13,7 +13,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const me = await getUser(); // Deve fazer GET /me com token
+        const token = localStorage.getItem("token");
+        const me = await getUser(token); // Deve fazer GET /me com token
         if (me?.name) setUser(me);
       } catch (err) {
         console.log(err)

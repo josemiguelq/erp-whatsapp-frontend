@@ -6,19 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, User } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { getUser, logout } from "@/api/api";
+import { getUser } from "@/api/api";
 import { useRouter } from "next/navigation";
 
 const categories = ["Módulos", "Telas", "Ferramentas"];
 
-export default function StoreHader() {
+export default function StoreHeader() {
   const [user, setUser] = useState<null | { name: string }>(null);
   const router = useRouter();
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const me = await getUser(); // Deve fazer GET /me com token
+        const token = localStorage.getItem("token");
+        const me = await getUser(token); // Deve fazer GET /me com token
         if (me?.name) setUser(me);
       } catch (err) {
         console.log(err);
@@ -29,7 +30,7 @@ export default function StoreHader() {
   }, []);
 
   const handleLogout = () => {
-    logout(); // remove token do localStorage
+    localStorage.removeItem("token");
     setUser(null);
     router.refresh(); // ou router.push("/login");
   };

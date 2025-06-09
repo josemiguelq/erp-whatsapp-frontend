@@ -30,7 +30,8 @@ export default function SearchAndSelectProducts() {
     }
 
     const delayDebounce = setTimeout(() => {
-      searchProducts(query)
+      const token = localStorage.getItem("token");
+      searchProducts(query, token)
         .then(setResults)
         .catch(() => setResults([]));
     }, 300);

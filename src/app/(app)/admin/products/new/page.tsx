@@ -64,6 +64,7 @@ export default function NewProductPage() {
   };
 
   const handleSubmit = async () => {
+    const token = localStorage.getItem("token")
     try {
       await createProduct({
         ...formData,
@@ -71,7 +72,7 @@ export default function NewProductPage() {
         related_products: [],
         related_models: [],
         variations,
-      });
+      }, token);
       router.push("/products");
     } catch (err) {
       console.error(err);
