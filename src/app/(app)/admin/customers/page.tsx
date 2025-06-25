@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Plus } from "lucide-react";
+import { Plus, Eye, ReceiptText  } from "lucide-react";
+
 
 type Customer = {
   id: string;
@@ -69,11 +70,17 @@ export default function CustomersPage() {
                   <td className="p-2">{c.name}</td>
                   <td className="p-2">{c.phone || "-"}</td>
                   <td className="p-2">{c.company || "-"}</td>
-                  <td className="p-2">
-                    <Button onClick={() => openSidebar(c)} size="sm">
-                      Ver detalhes
-                    </Button>
-                  </td>
+                  <td className="p-2 space-x-2">
+  <button onClick={() => openSidebar(c)} title="Ver detalhes">
+    <Eye className="w-5 h-5 text-gray-600 hover:text-blue-600" />
+  </button>
+  <button
+    onClick={() => router.push(`/admin/customers/${c.id}/debts`)}
+    title="Ver dívidas"
+  >
+    <ReceiptText className="w-5 h-5 text-gray-600 hover:text-green-600" />
+  </button>
+</td>
                 </tr>
               ))}
             </tbody>

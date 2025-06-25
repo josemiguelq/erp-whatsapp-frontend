@@ -28,7 +28,7 @@ export default function LoginPage() {
 
     if (data.token) {
       saveToken(data.token);
-      router.push("/products");  // redireciona aqui
+      router.push("/admin/products");  // redireciona aqui
     }
 
     setLoading(false);
