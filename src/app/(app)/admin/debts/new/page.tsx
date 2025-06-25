@@ -18,11 +18,6 @@ type Customer = {
   name: string;
 };
 
-type Item = {
-  name: string;
-  price: number;
-};
-
 export default function DebtRegisterPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
