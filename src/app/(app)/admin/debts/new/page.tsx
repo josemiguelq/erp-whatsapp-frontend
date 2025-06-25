@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { CustomerForm } from "@/components/CustomerForm"; // Reutilizável
 import { Plus } from "lucide-react";

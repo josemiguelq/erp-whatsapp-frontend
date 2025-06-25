@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createDebt(debt:any, token: string|null): Promise<any> {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
     const res = await fetch(`${API_URL}/api/debts`, {
@@ -12,6 +13,7 @@ export async function createDebt(debt:any, token: string|null): Promise<any> {
     return res.json();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export async function listDebt(debt:any, token: string|null): Promise<any> {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
     const res = await fetch(`${API_URL}/api/debts/list`, {
@@ -23,7 +25,8 @@ export async function createDebt(debt:any, token: string|null): Promise<any> {
     if (!res.ok) throw new Error("Erro ao listar");
     return res.json();
   }
-
+  
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   export async function listPaginatedCustomerDebts(customerId: string, page = 1, token: string | null) {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const res = await fetch(`${API_URL}/api/debts/customer/${customerId}/list?page=${page}`, {
