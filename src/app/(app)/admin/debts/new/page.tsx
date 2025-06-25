@@ -94,7 +94,7 @@ export default function DebtRegisterPage() {
           const results = await searchByName(query, token);
           setCustomers(results);
 
-          const exact = results.find(c => c.name.toLowerCase() === query.toLowerCase());
+          const exact = results.find((c: Customer) => c.name.toLowerCase() === query.toLowerCase());
           if (exact) setSelectedCustomer(exact);
         } catch (err) {
           console.error("Erro na busca de cliente:", err);
