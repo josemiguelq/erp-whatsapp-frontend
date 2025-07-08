@@ -7,6 +7,7 @@ import { createProduct } from "@/api/products";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
 
 interface Variation {
   price: number | "";
@@ -81,41 +82,42 @@ export default function NewProductPage() {
   };
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
+    <div className="max-w-none sm:max-w-2xl mx-auto">
       <h1 className="text-2xl font-semibold mb-4">Novo Produto</h1>
 
-      <div className="space-y-4">
-        <Input
-          name="type"
-          placeholder="Tipo"
-          value={formData.type}
-          onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-        />
-        <Input
-          name="model"
-          placeholder="Modelo"
-          value={formData.model}
-          onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-        />
-        <Input
-          name="name"
-          placeholder="Nome do produto"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        />
-        <Input
-          name="stock"
-          placeholder="Estoque"
-          value={formData.stock}
-          onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-        />
-        <Textarea
-          name="notes"
-          placeholder="Notas"
-          value={formData.notes}
-          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-        />
-      </div>
+      <Card className="p-4">
+        <div className="space-y-4">
+          <Input
+            name="type"
+            placeholder="Tipo"
+            value={formData.type}
+            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+          />
+          <Input
+            name="model"
+            placeholder="Modelo"
+            value={formData.model}
+            onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+          />
+          <Input
+            name="name"
+            placeholder="Nome do produto"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
+          <Input
+            name="stock"
+            placeholder="Estoque"
+            value={formData.stock}
+            onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+          />
+          <Textarea
+            name="notes"
+            placeholder="Notas"
+            value={formData.notes}
+            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+          />
+        </div>
 
       <div className="mt-6">
         <h2 className="text-lg font-medium mb-2">Variações</h2>

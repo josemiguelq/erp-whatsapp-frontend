@@ -2,8 +2,13 @@
 "use client";
 
 import { useState } from "react";
+import { Menu } from "lucide-react";
 
-export default function Topbar() {
+interface TopbarProps {
+  onMenuClick?: () => void;
+}
+
+export default function Topbar({ onMenuClick }: TopbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const name = "João Miguel"; // Você pode pegar isso de um contexto/autenticado
   const initials = name
@@ -18,8 +23,17 @@ export default function Topbar() {
   };
 
   return (
-    <header className="flex justify-end items-center bg-white border-b p-4 relative">
-      <div className="relative">
+    <header className="flex justify-between items-center bg-white border-b p-4 relative">
+      {/* Mobile Menu Button */}
+      <button
+        onClick={onMenuClick}
+        className="md:hidden p-2 hover:bg-gray-100 rounded"
+      >
+        <Menu className="w-6 h-6" />
+      </button>
+
+      {/* User Menu */}
+      <div className="relative ml-auto">
         <button
           onClick={() => setMenuOpen((prev) => !prev)}
           className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold"

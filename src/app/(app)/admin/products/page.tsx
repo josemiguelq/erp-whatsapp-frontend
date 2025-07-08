@@ -6,7 +6,7 @@ import { fetchProducts } from "@/api/products";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Plus, Eye, Edit } from "lucide-react";
+import { Plus, Eye, Edit, Menu } from "lucide-react";
 
 type Product = {
   _id: string;
@@ -24,6 +24,7 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -45,16 +46,17 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-xl font-bold">Produtos</h1>
-        <Button onClick={() => router.push("/admin/products/new")}>
+        <Button onClick={() => router.push("/admin/products/new")} className="w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" /> Novo
         </Button>
       </div>
 
-      <Card className="p-4">
-        <div className="w-full overflow-x-auto">
+      <Card className="p-2 sm:p-4">
+        {/* Desktop Table */}
+        <div className="hidden md:block w-full overflow-x-auto">
           <table className="min-w-full border rounded">
             <thead className="bg-gray-100">
               <tr>
@@ -83,43 +85,104 @@ export default function ProductsPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile Cards */}
+        <div className="md:hidden space-y-3">
+          {products.map((p, idx) => (
+            <div key={idx} className="border rounded-lg p-3">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h3 className="font-medium">{p.model}</h3>
+                  <p className="text-sm text-gray-600">{p.type}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={() => openSidebar(p)} size="sm" variant="outline">
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                  <Button onClick={() => router.push(`/admin/products/${p._id}/edit`)} size="sm" variant="outline">
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </Card>
 
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="right" className="w-[400px]">
+        <SheetContent side="right" className="w-[400px] sm:w-[400px] md:w-[500px] max-w-[90vw] md:max-w-[50vw]">
           <SheetHeader>
-            <SheetTitle>{selectedProduct?.model || "Detalhes do Produto"}</SheetTitle>
+            <SheetTitle className="text-left">{selectedProduct?.model || "Detalhes do Produto"}</SheetTitle>
           </SheetHeader>
-          <p><strong>ID:</strong> {selectedProduct?._id}</p>
-          <p><strong>Tipo:</strong> {selectedProduct?.type}</p>
-          <p><strong>Estoque:</strong> {selectedProduct?.stock}</p>
-          <div className="mt-2">
-            <strong>Etiquetas:</strong>
-            <ul className="list-disc ml-4">
-              {selectedProduct?.type_labels?.map((label, i) => <li key={i}>{label}</li>)}
-            </ul>
+          <div className="space-y-4 mt-4">
+            <div className="grid grid-cols-1 gap-3">
+              <div>
+                <strong className="text-sm font-medium">ID:</strong>
+                <p className="text-sm text-gray-600">{selectedProduct?._id}</p>
+              </div>
+              <div>
+                <strong className="text-sm font-medium">Tipo:</strong>
+                <p className="text-sm text-gray-600">{selectedProduct?.type}</p>
+              </div>
+              <div>
+                <strong className="text-sm font-medium">Estoque:</strong>
+                <p className="text-sm text-gray-600">{selectedProduct?.stock}</p>
+              </div>
+              
+              {selectedProduct?.type_labels && selectedProduct.type_labels.length > 0 && (
+                <div>
+                  <strong className="text-sm font-medium">Etiquetas:</strong>
+                  <ul className="list-disc ml-4 mt-1">
+                    {selectedProduct.type_labels.map((label, i) => (
+                      <li key={i} className="text-sm text-gray-600">{label}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {selectedProduct?.related_models && selectedProduct.related_models.length > 0 && (
+                <div>
+                  <strong className="text-sm font-medium">Modelos Relacionados:</strong>
+                  <ul className="list-disc ml-4 mt-1">
+                    {selectedProduct.related_models.map((model, i) => (
+                      <li key={i} className="text-sm text-gray-600">{model}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {selectedProduct?.related_products && selectedProduct.related_products.length > 0 && (
+                <div>
+                  <strong className="text-sm font-medium">Produtos Relacionados:</strong>
+                  <ul className="list-disc ml-4 mt-1">
+                    {selectedProduct.related_products.map((prod, i) => (
+                      <li key={i} className="text-sm text-gray-600">{prod}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {selectedProduct?.variations && selectedProduct.variations.length > 0 && (
+                <div>
+                  <strong className="text-sm font-medium">Variações:</strong>
+                  <ul className="list-disc ml-4 mt-1">
+                    {selectedProduct.variations.map((v, i) => (
+                      <li key={i} className="text-sm text-gray-600">
+                        {v.description} - R$ {v.price.toFixed(2)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {selectedProduct?.notes && (
+                <div>
+                  <strong className="text-sm font-medium">Notas:</strong>
+                  <p className="text-sm text-gray-600 mt-1">{selectedProduct.notes}</p>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="mt-2">
-            <strong>Modelos Relacionados:</strong>
-            <ul className="list-disc ml-4">
-              {selectedProduct?.related_models?.map((model, i) => <li key={i}>{model}</li>)}
-            </ul>
-          </div>
-          <div className="mt-2">
-            <strong>Produtos Relacionados:</strong>
-            <ul className="list-disc ml-4">
-              {selectedProduct?.related_products?.map((prod, i) => <li key={i}>{prod}</li>)}
-            </ul>
-          </div>
-          <div className="mt-2">
-            <strong>Variações:</strong>
-            <ul className="list-disc ml-4">
-              {selectedProduct?.variations?.map((v, i) => (
-                <li key={i}>{v.description} - R$ {v.price.toFixed(2)}</li>
-              ))}
-            </ul>
-          </div>
-          <p className="mt-2"><strong>Notas:</strong> {selectedProduct?.notes}</p>
         </SheetContent>
       </Sheet>
     </div>

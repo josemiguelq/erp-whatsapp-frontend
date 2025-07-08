@@ -114,14 +114,14 @@ export default function EditProductPage() {
 
   if (loading) {
     return (
-      <div className="p-6 max-w-xl mx-auto">
+      <div className="max-w-none sm:max-w-2xl mx-auto">
         <div className="text-center">Carregando produto...</div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
+    <div className="max-w-none sm:max-w-2xl mx-auto">
       <h1 className="text-2xl font-semibold mb-4">Editar Produto</h1>
       <Card className="p-4">
       <div className="space-y-4">
