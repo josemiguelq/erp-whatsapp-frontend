@@ -16,7 +16,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
   const links = [
     { name: "Dashboard", href: "/admin/dashboard" },
-    { name: "POS", href: "/admin/pos" },
+    { name: "Vender", href: "/admin/pos" },
     { name: "Produtos", href: "/admin/products" },
     { name: "Clientes", href: "/admin/customers" },
   ];
