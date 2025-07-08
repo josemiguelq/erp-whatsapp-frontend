@@ -54,3 +54,21 @@ export async function searchProducts(q: string, token: string|null): Promise<any
     if (!res.ok) throw new Error("Erro ao buscar produtos");
     return res.json();
   }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function updateProduct(id: string, productData: any, token: string|null) {
+  const res = await fetch(`${API_URL}/api/products/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(productData),
+  });
+
+  if (!res.ok) {
+    throw new Error("Erro ao atualizar produto");
+  }
+
+  return res.json();
+}

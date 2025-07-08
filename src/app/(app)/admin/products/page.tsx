@@ -6,7 +6,7 @@ import { fetchProducts } from "@/api/products";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Plus } from "lucide-react";
+import { Plus, Eye, Edit } from "lucide-react";
 
 type Product = {
   _id: string;
@@ -69,9 +69,14 @@ export default function ProductsPage() {
                   <td className="p-2">{p.model}</td>
                   <td className="p-2">{p.type}</td>
                   <td className="p-2">
-                    <Button onClick={() => openSidebar(p)} size="sm">
-                      Ver detalhes
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button onClick={() => openSidebar(p)} size="sm" variant="outline">
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button onClick={() => router.push(`/admin/products/${p._id}/edit`)} size="sm" variant="outline">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
