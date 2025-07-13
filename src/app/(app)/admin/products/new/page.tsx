@@ -89,7 +89,7 @@ export default function NewProductPage() {
         <div className="space-y-4">
           <Input
             name="type"
-            placeholder="Tipo"
+            placeholder="Categoria"
             value={formData.type}
             onChange={(e) => setFormData({ ...formData, type: e.target.value })}
           />
