@@ -6,7 +6,7 @@ import { fetchProducts } from "@/api/products";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Plus, Eye, Edit, Menu } from "lucide-react";
+import { Plus, Eye, Edit } from "lucide-react";
 
 type Product = {
   _id: string;
