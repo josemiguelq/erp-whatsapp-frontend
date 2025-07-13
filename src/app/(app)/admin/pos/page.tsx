@@ -145,6 +145,7 @@ export default function SearchAndSelectProducts() {
       await startScanning();
       setShowCamera(true);
     } catch (error) {
+      console.error("Erro ao acessar a câmera:", error);
       alert("Erro ao acessar a câmera. Verifique as permissões.");
     }
   };
