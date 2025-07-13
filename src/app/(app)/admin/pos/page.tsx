@@ -5,6 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { searchProducts } from "@/api/products";
 import { Card } from "@/components/ui/card";
+import { Camera, X } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 
 interface Product {
   _id: string;
@@ -30,6 +33,15 @@ export default function SearchAndSelectProducts() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Product[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
+  const [showCamera, setShowCamera] = useState(false);
+
+  // Hook personalizado para scanner de código de barras
+  const { isScanning, startScanning, stopScanning, videoRef, canvasRef, captureFrame } = useBarcodeScanner(
+    (barcode: string) => {
+      setQuery(barcode);
+      setShowCamera(false);
+    }
+  );
 
   // Buscar produtos com debounce
   useEffect(() => {
@@ -127,17 +139,51 @@ export default function SearchAndSelectProducts() {
 
   const { subtotal, totalDiscount, total } = calculateTotals();
 
+  // Função para abrir a câmera
+  const openCamera = async () => {
+    try {
+      await startScanning();
+      setShowCamera(true);
+    } catch (error) {
+      alert("Erro ao acessar a câmera. Verifique as permissões.");
+    }
+  };
+
+  // Função para fechar a câmera
+  const closeCamera = () => {
+    stopScanning();
+    setShowCamera(false);
+  };
+
+  // Função para capturar código de barras
+  const captureBarcode = () => {
+    captureFrame();
+  };
+
   return (
     <div className="max-w-none sm:max-w-4xl mx-auto p-2 sm:p-4">
+      <h1 className="text-xl font-bold">Vendas</h1>
       <Card className="p-3 sm:p-4">
         <h1 className="text-xl sm:text-2xl font-semibold mb-4">Buscar e Selecionar Produtos</h1>
 
-        <Input
-          placeholder="Buscar por SKU, nome ou modelo"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="mb-4"
-        />
+        <div className="relative mb-4">
+          <Input
+            placeholder="Buscar por SKU, nome, modelo ou código de barras"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="pr-12"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={openCamera}
+            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+            title="Ler código de barras"
+          >
+            <Camera className="w-4 h-4" />
+          </Button>
+        </div>
 
         {results.length > 0 && (
           <div className="mb-4 border rounded bg-gray-50 p-2 max-h-60 overflow-auto">
@@ -443,6 +489,62 @@ export default function SearchAndSelectProducts() {
             </div>
           </div>
         )}
+
+        {/* Modal da Câmera */}
+        <Dialog open={showCamera} onOpenChange={closeCamera}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center justify-between">
+                Ler Código de Barras
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={closeCamera}
+                  className="h-6 w-6 p-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div className="relative">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  className="w-full h-64 bg-black rounded-lg"
+                />
+                <canvas ref={canvasRef} className="hidden" />
+                
+                {/* Overlay para guiar o usuário */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="border-2 border-white border-dashed w-48 h-16 rounded"></div>
+                </div>
+              </div>
+              
+                             <div className="text-center space-y-2">
+                 <p className="text-sm text-gray-600">
+                   Posicione o código de barras dentro do retângulo
+                 </p>
+                 <Button 
+                   onClick={captureBarcode} 
+                   className="w-full"
+                   disabled={!isScanning}
+                 >
+                   {isScanning ? "Capturar Código de Barras" : "Inicializando..."}
+                 </Button>
+               </div>
+               
+               <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+                 <p className="text-xs text-yellow-800">
+                   💡 <strong>Nota:</strong> Esta é uma versão de demonstração. 
+                   O código de barras será simulado automaticamente.
+                 </p>
+               </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </Card>
     </div>
   );
