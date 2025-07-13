@@ -1,54 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trash } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { updateProduct, getProductById } from "@/api/products";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
-
-interface Variation {
-  price: number | "";
-  description: string;
-  images: string[];
-  showUrlInput?: boolean;
-  tempImageUrl?: string;
-}
+import ProductForm from "@/components/ProductForm";
+import { ProductFormData } from "@/types/product";
 
 export default function EditProductPage() {
   const router = useRouter();
   const params = useParams();
   const productId = params.id as string;
 
-  const [formData, setFormData] = useState({
-    name: "",
-    model: "",
-    type: "",
-    stock: "",
-    notes: "",
-  });
-
-  const [variations, setVariations] = useState<Variation[]>([]);
+  const [productData, setProductData] = useState<ProductFormData | undefined>(undefined);
   const [loading, setLoading] = useState(true);
-  const [showCustomCategory, setShowCustomCategory] = useState(false);
-  const [customCategory, setCustomCategory] = useState("");
-
-  const categories = [
-    "Bateria",
-    "Touch/Display",
-    "Cabo",
-    "Carregador",
-    "Capinha",
-    "Película",
-    "Fone de Ouvido",
-    "Alto-falante",
-    "Microfone",
-    "Câmera",
-    "Placa Mãe",
-    "Outros"
-  ];
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -56,23 +20,15 @@ export default function EditProductPage() {
         const token = localStorage.getItem("token");
         const product = await getProductById(productId, token);
         
-        const productType = product.type || "";
-        
-        setFormData({
+        setProductData({
           name: product.name || "",
           model: product.model || "",
-          type: productType,
+          type: product.type || "",
+          brand: product.brand || "",
           stock: product.stock || "",
           notes: product.notes || "",
+          variations: product.variations || [],
         });
-
-        // Verificar se a categoria é personalizada
-        if (productType && !categories.slice(0, -1).includes(productType)) {
-          setShowCustomCategory(true);
-          setCustomCategory(productType);
-        }
-
-        setVariations(product.variations || []);
         setLoading(false);
       } catch (error) {
         console.error("Erro ao carregar produto:", error);
@@ -86,41 +42,7 @@ export default function EditProductPage() {
     }
   }, [productId, router]);
 
-  useEffect(() => {
-    if (formData.type || formData.model) {
-      const suggestedName = `${formData.type} ${formData.model}`.trim();
-      setFormData((prev) => ({ ...prev, name: suggestedName }));
-    }
-  }, [formData.type, formData.model]);
-
-  const handleImageUpload = (index: number, files: FileList | null) => {
-    if (!files) return;
-
-    const newImages = Array.from(files).map((file) =>
-      URL.createObjectURL(file)
-    );
-
-    setVariations((old) => {
-      const copy = [...old];
-      copy[index].images = [...(copy[index].images || []), ...newImages];
-      return copy;
-    });
-  };
-
-  const handleAddImageUrl = (index: number) => {
-    setVariations((old) => {
-      const copy = [...old];
-      const url = copy[index].tempImageUrl?.trim();
-      if (url) {
-        copy[index].images.push(url);
-        copy[index].tempImageUrl = "";
-        copy[index].showUrlInput = false;
-      }
-      return copy;
-    });
-  };
-
-  const handleSubmit = async () => {
+  const handleSubmit = async (formData: ProductFormData) => {
     const token = localStorage.getItem("token");
     try {
       await updateProduct(productId, {
@@ -128,7 +50,6 @@ export default function EditProductPage() {
         type_labels: [],
         related_products: [],
         related_models: [],
-        variations,
       }, token);
       router.push("/admin/products");
     } catch (err) {
@@ -137,221 +58,13 @@ export default function EditProductPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="max-w-none sm:max-w-2xl mx-auto">
-        <div className="text-center">Carregando produto...</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-none sm:max-w-2xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-4">Editar Produto</h1>
-      <Card className="p-4">
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Categoria</label>
-          <select
-            name="type"
-            value={showCustomCategory ? "Outros" : (categories.includes(formData.type) ? formData.type : "")}
-            onChange={(e) => {
-              const value = e.target.value;
-              if (value === "Outros") {
-                setShowCustomCategory(true);
-                setFormData({ ...formData, type: customCategory });
-              } else {
-                setShowCustomCategory(false);
-                setCustomCategory("");
-                setFormData({ ...formData, type: value });
-              }
-            }}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <option value="" disabled>Selecione uma categoria</option>
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-          
-          {showCustomCategory && (
-            <Input
-              placeholder="Digite a categoria personalizada"
-              value={customCategory}
-              onChange={(e) => {
-                setCustomCategory(e.target.value);
-                setFormData({ ...formData, type: e.target.value });
-              }}
-            />
-          )}
-        </div>
-        <Input
-          name="model"
-          placeholder="Modelo"
-          value={formData.model}
-          onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-        />
-        <Input
-          name="name"
-          placeholder="Nome do produto"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        />
-        <Input
-          name="stock"
-          placeholder="Estoque"
-          value={formData.stock}
-          onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-        />
-        <Textarea
-          name="notes"
-          placeholder="Notas"
-          value={formData.notes}
-          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-        />
-      </div>
-
-      <div className="mt-6">
-        <h2 className="text-lg font-medium mb-2">Variações</h2>
-
-        {variations.map((variation, index) => (
-          <div key={index} className="space-y-2 mb-4 border-b pb-4">
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                placeholder="Preço"
-                value={variation.price}
-                onChange={(e) =>
-                  setVariations((old) => {
-                    const copy = [...old];
-                    copy[index].price =
-                      e.target.value === "" ? "" : Number(e.target.value);
-                    return copy;
-                  })
-                }
-                className="w-24"
-                min={0}
-                step="0.01"
-              />
-              <Input
-                placeholder="Descrição"
-                value={variation.description}
-                onChange={(e) =>
-                  setVariations((old) => {
-                    const copy = [...old];
-                    copy[index].description = e.target.value;
-                    return copy;
-                  })
-                }
-              />
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() =>
-                  setVariations((old) => old.filter((_, i) => i !== index))
-                }
-              >
-                Remover
-              </Button>
-            </div>
-
-            {/* Upload de arquivos */}
-            <Input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={(e) => handleImageUpload(index, e.target.files)}
-            />
-
-            {/* Adicionar via URL */}
-            <div>
-              {!variation.showUrlInput ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    setVariations((old) => {
-                      const copy = [...old];
-                      copy[index].showUrlInput = true;
-                      return copy;
-                    })
-                  }
-                >
-                  + Adicionar imagem via link
-                </Button>
-              ) : (
-                <div className="flex gap-2 mt-2">
-                  <Input
-                    placeholder="https://exemplo.com/imagem.jpg"
-                    value={variation.tempImageUrl || ""}
-                    onChange={(e) =>
-                      setVariations((old) => {
-                        const copy = [...old];
-                        copy[index].tempImageUrl = e.target.value;
-                        return copy;
-                      })
-                    }
-                  />
-                  <Button onClick={() => handleAddImageUrl(index)}>Adicionar</Button>
-                </div>
-              )}
-            </div>
-
-            {/* Preview das imagens */}
-            <div className="flex gap-2 mt-2 overflow-x-auto">
-              {variation.images?.map((img, i) => (
-                <div key={i} className="relative group w-20 h-20">
-                  <img
-                    src={img}
-                    alt={`img-${i}`}
-                    className="w-full h-full object-cover rounded-md border"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setVariations((old) => {
-                         const copy = [...old];
-                  copy[index] = {
-                    ...copy[index],
-                    images: copy[index].images.filter((_, imgIndex) => imgIndex !== i),
-                  };
-                  return copy;
-                      })
-                    }
-                    className="absolute top-0 right-0 p-1 bg-red-600 text-white rounded-bl-md opacity-0 group-hover:opacity-100 transition"
-                  >
-                    <Trash size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-
-        <Button
-          onClick={() =>
-            setVariations((old) => [
-              ...old,
-              { price: "", description: "", images: [] },
-            ])
-          }
-          className="mt-2"
-        >
-          + Adicionar Variação
-        </Button>
-      </div>
-
-      <div className="mt-6 flex gap-2">
-        <Button onClick={handleSubmit} className="flex-1">
-          Atualizar Produto
-        </Button>
-        <Button variant="outline" onClick={() => router.push("/admin/products")}>
-          Cancelar
-        </Button>
-      </div>
-      </Card>
-    </div>
+    <ProductForm
+      title="Editar Produto"
+      submitButtonText="Salvar Alterações"
+      onSubmit={handleSubmit}
+      initialData={productData}
+      isLoading={loading}
+    />
   );
 }
