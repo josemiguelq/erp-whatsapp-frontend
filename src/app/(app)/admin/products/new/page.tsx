@@ -29,6 +29,23 @@ export default function NewProductPage() {
   });
 
   const [variations, setVariations] = useState<Variation[]>([]);
+  const [showCustomCategory, setShowCustomCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState("");
+
+  const categories = [
+    "Bateria",
+    "Touch/Display",
+    "Cabo",
+    "Carregador",
+    "Capinha",
+    "Película",
+    "Fone de Ouvido",
+    "Alto-falante",
+    "Microfone",
+    "Câmera",
+    "Placa Mãe",
+    "Outros"
+  ];
 
   useEffect(() => {
     if (formData.type || formData.model) {
@@ -87,12 +104,43 @@ export default function NewProductPage() {
 
       <Card className="p-4">
         <div className="space-y-4">
-          <Input
-            name="type"
-            placeholder="Categoria"
-            value={formData.type}
-            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-          />
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Categoria</label>
+            <select
+              name="type"
+              value={showCustomCategory ? "Outros" : (categories.includes(formData.type) ? formData.type : "")}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === "Outros") {
+                  setShowCustomCategory(true);
+                  setFormData({ ...formData, type: customCategory });
+                } else {
+                  setShowCustomCategory(false);
+                  setCustomCategory("");
+                  setFormData({ ...formData, type: value });
+                }
+              }}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="" disabled>Selecione uma categoria</option>
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+            
+            {showCustomCategory && (
+              <Input
+                placeholder="Digite a categoria personalizada"
+                value={customCategory}
+                onChange={(e) => {
+                  setCustomCategory(e.target.value);
+                  setFormData({ ...formData, type: e.target.value });
+                }}
+              />
+            )}
+          </div>
           <Input
             name="model"
             placeholder="Modelo"
