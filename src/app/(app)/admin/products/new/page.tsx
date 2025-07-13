@@ -74,7 +74,7 @@ export default function NewProductPage() {
         related_models: [],
         variations,
       }, token);
-      router.push("/products");
+      router.push("/admin/products");
     } catch (err) {
       console.error(err);
       alert("Erro ao criar produto");
