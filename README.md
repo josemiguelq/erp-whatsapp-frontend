@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ERP WhatsApp Frontend
 
-## Getting Started
+## Configuração
 
-First, run the development server:
+### Variáveis de Ambiente
+
+Crie um arquivo `.env.local` na raiz do projeto frontend com:
+
+```
+NEXT_PUBLIC_API_URL=http://localhost:3001
+```
+
+**Nota:** Se não configurado, o sistema usa `http://localhost:3001` por padrão.
+
+## Páginas Disponíveis
+
+- `/admin/dashboard` - Dashboard principal
+- `/admin/pos` - Sistema de vendas (POS)
+- `/admin/products` - Gestão de produtos
+- `/admin/customers` - Gestão de clientes
+- `/admin/whatsapp` - Teste do WhatsApp Agent
+
+## WhatsApp Agent
+
+A página `/admin/whatsapp` permite testar o agent diretamente pela interface:
+
+- Chat temporário para testes
+- Configuração personalizada de Thread ID
+- Histórico da conversa
+- Interface responsiva
+
+### Como usar:
+
+1. Certifique-se de que o backend está rodando em `http://localhost:3001`
+2. Acesse `/admin/whatsapp`
+3. Digite mensagens para testar o agent
+4. Use o botão "Limpar Chat" para reiniciar
+
+## Desenvolvimento
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre em [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Funcionalidades
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Produtos**: CRUD completo com variações, imagens e categorias
+- **Clientes**: Gestão de clientes e histórico
+- **POS**: Sistema de vendas com cálculos automáticos
+- **Dashboard**: Métricas e gráficos
+- **WhatsApp Agent**: Chat AI para atendimento
 
-## Learn More
+## API Integration
 
-To learn more about Next.js, take a look at the following resources:
+O frontend se comunica com o backend em `http://localhost:3001` usando:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- REST API para CRUD operations
+- WebSocket para chat em tempo real (WhatsApp Agent)
+- Authentication via JWT tokens
