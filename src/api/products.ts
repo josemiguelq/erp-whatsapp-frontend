@@ -1,10 +1,27 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+interface FetchProductsParams {
+  page?: number;
+  limit?: number;
+  category?: string;
+  name?: string;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function fetchProducts(token: string|null): Promise<any[]> {
+export async function fetchProducts(token: string|null, params: FetchProductsParams = {}): Promise<any> {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
+    
+    // Build query string
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('page', params.page.toString());
+    if (params.limit) queryParams.append('limit', params.limit.toString());
+    if (params.category) queryParams.append('category', params.category);
+    if (params.name) queryParams.append('name', params.name);
+    
+    const queryString = queryParams.toString();
+    const url = `${API_URL}/api/products${queryString ? `?${queryString}` : ''}`;
   
-    const res = await fetch(`${API_URL}/api/products`, {
+    const res = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
