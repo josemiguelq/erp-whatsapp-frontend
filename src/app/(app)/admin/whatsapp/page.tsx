@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import { Send, MessageCircle, User, Bot, RefreshCw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 
 interface Message {
   id: string;
