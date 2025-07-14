@@ -72,3 +72,18 @@ export async function updateProduct(id: string, productData: any, token: string|
 
   return res.json();
 }
+
+export async function deleteProduct(id: string, token: string|null) {
+  const res = await fetch(`${API_URL}/api/products/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error("Erro ao deletar produto");
+  }
+
+  return res.json();
+}

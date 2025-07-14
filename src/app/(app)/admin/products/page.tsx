@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { fetchProducts } from "@/api/products";
+import { fetchProducts, deleteProduct } from "@/api/products";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Plus, Eye, Edit } from "lucide-react";
+import { Plus, Eye, Edit, Trash2 } from "lucide-react";
 
 type Product = {
   _id: string;
@@ -44,6 +44,33 @@ export default function ProductsPage() {
     setSidebarOpen(true);
   };
 
+  const handleDeleteProduct = async (productId: string, productModel: string) => {
+    const confirmDelete = window.confirm(`Tem certeza que deseja deletar o produto "${productModel}"?`);
+    
+    if (!confirmDelete) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      await deleteProduct(productId, token);
+      
+      // Atualizar a lista removendo o produto deletado
+      setProducts(prev => prev.filter(p => p._id !== productId));
+      
+      // Fechar sidebar se o produto deletado estava sendo visualizado
+      if (selectedProduct?._id === productId) {
+        setSidebarOpen(false);
+        setSelectedProduct(null);
+      }
+      
+      alert("Produto deletado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao deletar produto:", error);
+      alert("Erro ao deletar produto. Tente novamente.");
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -77,6 +104,13 @@ export default function ProductsPage() {
                       <Button onClick={() => router.push(`/admin/products/${p._id}/edit`)} size="sm" variant="outline">
                         <Edit className="w-4 h-4" />
                       </Button>
+                      <Button 
+                        onClick={() => handleDeleteProduct(p._id, p.model)} 
+                        size="sm" 
+                        variant="destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -100,6 +134,13 @@ export default function ProductsPage() {
                   </Button>
                   <Button onClick={() => router.push(`/admin/products/${p._id}/edit`)} size="sm" variant="outline">
                     <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    onClick={() => handleDeleteProduct(p._id, p.model)} 
+                    size="sm" 
+                    variant="destructive"
+                  >
+                    <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
