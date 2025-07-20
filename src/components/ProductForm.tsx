@@ -336,11 +336,18 @@ export default function ProductForm({
               />
             )}
           </div>
+          <label className="text-sm font-medium">Nome (Como vai aparecer na lista de produtos)</label>
+          <Input
+            name="name"
+            placeholder="Nome do produto"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
           <div className="space-y-2 relative">
             <label className="text-sm font-medium">Marca</label>
             <Input
               name="brand"
-              placeholder="Digite a marca (Apple, Samsung, Xiaomi, Motorola...)"
+              placeholder="Digite a marca da peça"
               value={formData.brand}
               onChange={(e) => handleBrandChange(e.target.value)}
               onFocus={() => {
@@ -376,21 +383,16 @@ export default function ProductForm({
           <label className="text-sm font-medium">Modelo</label>
           <Input
             name="model"
-            placeholder="Modelo"
+            placeholder="Modelo da peça"
             value={formData.model}
             onChange={(e) => setFormData({ ...formData, model: e.target.value })}
           />
           
-          <label className="text-sm font-medium">Nome (Como vai aparecer na lista de produtos)</label>
-          <Input
-            name="name"
-            placeholder="Nome do produto"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          />
+          <label className="text-sm font-medium">Estoque</label>
           <Input
             name="stock"
             placeholder="Estoque"
+            type="number"
             value={formData.stock}
             onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
           />
