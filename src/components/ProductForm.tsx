@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trash, Copy } from "lucide-react";
+import { Trash, Copy, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
+import { searchModels, createModel, Model } from "@/api/models";
 
 import { Variation, ProductFormData } from "@/types/product";
 
@@ -42,6 +43,17 @@ export default function ProductForm({
   const [samePriceForAll, setSamePriceForAll] = useState(false);
   const [showBrandSuggestions, setShowBrandSuggestions] = useState(false);
   const [filteredBrands, setFilteredBrands] = useState<string[]>([]);
+  
+  // Estados para busca de modelos
+  const [modelSuggestions, setModelSuggestions] = useState<Model[]>([]);
+  const [showModelSuggestions, setShowModelSuggestions] = useState(false);
+  const [isSearchingModels, setIsSearchingModels] = useState(false);
+  const [showCreateModelDialog, setShowCreateModelDialog] = useState(false);
+  
+  // Estados para busca de dispositivos compatíveis
+  const [compatibleDeviceSuggestions, setCompatibleDeviceSuggestions] = useState<Model[]>([]);
+  const [showCompatibleDeviceSuggestions, setShowCompatibleDeviceSuggestions] = useState(false);
+  const [isSearchingCompatibleDevices, setIsSearchingCompatibleDevices] = useState(false);
 
   const categories = [
     "Bateria",
@@ -192,6 +204,125 @@ export default function ProductForm({
     setFilteredBrands([]);
   };
 
+  const handleModelSearch = async (value: string) => {
+    setFormData({ ...formData, model: value });
+    
+    if (value.length >= 2) {
+      setIsSearchingModels(true);
+      try {
+        const token = localStorage.getItem("token");
+        const models = await searchModels(value, token);
+        setModelSuggestions(models);
+        setShowModelSuggestions(models.length > 0);
+      } catch (error) {
+        console.error("Erro ao buscar modelos:", error);
+      } finally {
+        setIsSearchingModels(false);
+      }
+    } else {
+      setShowModelSuggestions(false);
+      setModelSuggestions([]);
+    }
+  };
+
+  const selectModel = (model: Model) => {
+    setFormData({ 
+      ...formData, 
+      model: model.model,
+      brand: model.brand // Atualiza a marca automaticamente
+    });
+    setShowModelSuggestions(false);
+    setModelSuggestions([]);
+  };
+
+  const handleCreateNewModel = async () => {
+    if (!formData.model.trim() || !formData.brand.trim()) {
+      alert("Por favor, preencha marca e modelo antes de criar");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      await createModel(formData.brand, formData.model, token);
+      alert("Modelo criado com sucesso!");
+    } catch (error: any) {
+      console.error("Erro ao criar modelo:", error);
+      alert(error.message || "Erro ao criar modelo");
+    }
+  };
+
+  const handleCompatibleDeviceSearch = async (value: string) => {
+    setNewCompatibleDevice(value);
+    
+    if (value.length >= 2) {
+      setIsSearchingCompatibleDevices(true);
+      try {
+        const token = localStorage.getItem("token");
+        const models = await searchModels(value, token);
+        setCompatibleDeviceSuggestions(models);
+        setShowCompatibleDeviceSuggestions(models.length > 0);
+      } catch (error) {
+        console.error("Erro ao buscar dispositivos:", error);
+      } finally {
+        setIsSearchingCompatibleDevices(false);
+      }
+    } else {
+      setShowCompatibleDeviceSuggestions(false);
+      setCompatibleDeviceSuggestions([]);
+    }
+  };
+
+  const selectCompatibleDevice = (model: Model) => {
+    const deviceName = `${model.brand} ${model.model}`;
+    if (!compatibleDevices.includes(deviceName)) {
+      setCompatibleDevices([...compatibleDevices, deviceName]);
+    }
+    setNewCompatibleDevice("");
+    setShowCompatibleDeviceSuggestions(false);
+    setCompatibleDeviceSuggestions([]);
+  };
+
+  const addCompatibleDevice = () => {
+    if (newCompatibleDevice.trim() && !compatibleDevices.includes(newCompatibleDevice.trim())) {
+      setCompatibleDevices([...compatibleDevices, newCompatibleDevice.trim()]);
+      setNewCompatibleDevice("");
+    }
+  };
+
+  const handleCreateNewCompatibleDevice = async () => {
+    if (!newCompatibleDevice.trim()) {
+      alert("Por favor, digite um dispositivo compatível");
+      return;
+    }
+
+    // Extrair marca e modelo do dispositivo (assumindo formato "Marca Modelo")
+    const parts = newCompatibleDevice.trim().split(" ");
+    if (parts.length < 2) {
+      alert("Por favor, digite no formato 'Marca Modelo' (ex: Apple iPhone 12)");
+      return;
+    }
+
+    const brand = parts[0];
+    const model = parts.slice(1).join(" ");
+
+    try {
+      const token = localStorage.getItem("token");
+      await createModel(brand, model, token);
+      
+      // Adicionar à lista de dispositivos compatíveis
+      const deviceName = `${brand} ${model}`;
+      if (!compatibleDevices.includes(deviceName)) {
+        setCompatibleDevices([...compatibleDevices, deviceName]);
+      }
+      setNewCompatibleDevice("");
+      
+      alert("Dispositivo criado e adicionado com sucesso!");
+    } catch (error: any) {
+      console.error("Erro ao criar dispositivo:", error);
+      alert(error.message || "Erro ao criar dispositivo");
+    }
+  };
+
   const handleSubmit = () => {
     onSubmit({
       ...formData,
@@ -315,32 +446,78 @@ export default function ProductForm({
           <div className="space-y-2">
             <label className="text-sm font-medium">Dispositivos Compatíveis</label>
             <div className="flex gap-2">
-              <Input
-                placeholder="Ex: iPhone 12, Samsung Galaxy S21"
-                value={newCompatibleDevice}
-                onChange={(e) => setNewCompatibleDevice(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (newCompatibleDevice.trim() && !compatibleDevices.includes(newCompatibleDevice.trim())) {
-                      setCompatibleDevices([...compatibleDevices, newCompatibleDevice.trim()]);
-                      setNewCompatibleDevice("");
+              <div className="flex-1 relative">
+                <Input
+                  placeholder="Digite para buscar ou criar dispositivo (ex: Apple iPhone 12)"
+                  value={newCompatibleDevice}
+                  onChange={(e) => handleCompatibleDeviceSearch(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addCompatibleDevice();
                     }
-                  }
-                }}
-              />
+                  }}
+                  onFocus={() => {
+                    if (newCompatibleDevice.length >= 2) {
+                      setShowCompatibleDeviceSuggestions(compatibleDeviceSuggestions.length > 0);
+                    }
+                  }}
+                  onBlur={() => {
+                    // Delay para permitir clique nas sugestões
+                    setTimeout(() => setShowCompatibleDeviceSuggestions(false), 200);
+                  }}
+                />
+                
+                {isSearchingCompatibleDevices && (
+                  <div className="absolute right-3 top-3">
+                    <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+                  </div>
+                )}
+                
+                {showCompatibleDeviceSuggestions && compatibleDeviceSuggestions.length > 0 && (
+                  <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-40 overflow-y-auto mt-1">
+                    {compatibleDeviceSuggestions.map((model) => (
+                      <button
+                        key={model._id}
+                        type="button"
+                        className="w-full text-left px-3 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none border-b border-gray-100 last:border-b-0"
+                        onClick={() => selectCompatibleDevice(model)}
+                      >
+                        <div className="font-medium">{model.brand} {model.model}</div>
+                        <div className="text-sm text-gray-500">Clique para adicionar</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
               <Button
                 type="button"
-                onClick={() => {
-                  if (newCompatibleDevice.trim() && !compatibleDevices.includes(newCompatibleDevice.trim())) {
-                    setCompatibleDevices([...compatibleDevices, newCompatibleDevice.trim()]);
-                    setNewCompatibleDevice("");
-                  }
-                }}
+                onClick={addCompatibleDevice}
+                className="whitespace-nowrap"
               >
                 Adicionar
               </Button>
+              
+              {newCompatibleDevice.trim() && newCompatibleDevice.length >= 2 && compatibleDeviceSuggestions.length === 0 && !isSearchingCompatibleDevices && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCreateNewCompatibleDevice}
+                  className="flex items-center gap-1 whitespace-nowrap"
+                  title="Criar novo dispositivo"
+                >
+                  <Plus size={16} />
+                  Criar
+                </Button>
+              )}
             </div>
+            
+            {newCompatibleDevice.length >= 2 && compatibleDeviceSuggestions.length === 0 && !isSearchingCompatibleDevices && (
+              <div className="text-sm text-gray-500">
+                Nenhum dispositivo encontrado. Use o formato "Marca Modelo" e clique em "Criar" para adicionar novo.
+              </div>
+            )}
             
             {compatibleDevices.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
