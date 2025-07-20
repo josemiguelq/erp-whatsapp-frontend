@@ -328,8 +328,8 @@ export default function ProductsPage() {
       )}
 
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="right" className="w-[400px] sm:w-[450px] md:w-[550px] max-w-[90vw] md:max-w-[50vw] overflow-y-auto">
-          <SheetHeader className="border-b pb-4">
+        <SheetContent side="right" className="w-[400px] sm:w-[450px] md:w-[550px] max-w-[90vw] md:max-w-[50vw] overflow-y-auto p-6">
+          <SheetHeader className="border-b pb-4 mb-6">
             <SheetTitle className="text-left text-lg font-semibold">
               {selectedProduct?.name || selectedProduct?.model || "Detalhes do Produto"}
             </SheetTitle>
@@ -338,7 +338,7 @@ export default function ProductsPage() {
             </p>
           </SheetHeader>
           
-          <div className="space-y-6 mt-6">
+          <div className="space-y-6">
             {/* Informações Básicas */}
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Informações Básicas</h3>
