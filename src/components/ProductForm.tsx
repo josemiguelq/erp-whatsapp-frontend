@@ -465,7 +465,7 @@ export default function ProductForm({
             
             {newCompatibleDevice.length >= 2 && compatibleDeviceSuggestions.length === 0 && !isSearchingCompatibleDevices && (
               <div className="text-sm text-gray-500">
-                Nenhum dispositivo encontrado. Use o formato "Marca Modelo" e clique em "Criar" para adicionar novo.
+                Nenhum dispositivo encontrado. Use o formato Marca Modelo e clique em Criar para adicionar novo.
               </div>
             )}
             
