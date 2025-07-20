@@ -9,10 +9,16 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { getUser } from "@/api/api";
 import { useRouter } from "next/navigation";
 
-const categories = ["Módulos", "Telas", "Ferramentas"];
+const categories = ["Bateria", "Touch/Display", "Cabo", "Carregador", "Capinha", "Película"];
 
-export default function StoreHeader() {
+interface StoreHeaderProps {
+  onSearch?: (searchTerm: string) => void;
+  onCategorySelect?: (category: string) => void;
+}
+
+export default function StoreHeader({ onSearch, onCategorySelect }: StoreHeaderProps) {
   const [user, setUser] = useState<null | { name: string }>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -35,6 +41,19 @@ export default function StoreHeader() {
     router.refresh(); // ou router.push("/login");
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (onSearch) {
+      onSearch(searchTerm);
+    }
+  };
+
+  const handleCategoryClick = (category: string) => {
+    if (onCategorySelect) {
+      onCategorySelect(category);
+    }
+  };
+
   return (      
       <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -42,7 +61,14 @@ export default function StoreHeader() {
             JoelExpress
           </Link>
 
-          <Input placeholder="Buscar produtos..." className="max-w-md w-full mx-4" />
+          <form onSubmit={handleSearch} className="max-w-md w-full mx-4">
+            <Input 
+              placeholder="Buscar produtos..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full"
+            />
+          </form>
 
           <div className="flex items-center gap-4">
             {/* Perfil com Dropdown */}
@@ -79,11 +105,18 @@ export default function StoreHeader() {
 
         {/* Menu de categorias */}
         <nav className="bg-gray-100 border-t">
-          <div className="max-w-7xl mx-auto px-4 py-2 flex gap-6 text-sm">
+          <div className="max-w-7xl mx-auto px-4 py-2 flex gap-6 text-sm overflow-x-auto">
+            <button
+              onClick={() => handleCategoryClick("")}
+              className="text-gray-700 hover:text-red-500 font-medium transition whitespace-nowrap"
+            >
+              Todos
+            </button>
             {categories.map((cat) => (
               <button
                 key={cat}
-                className="text-gray-700 hover:text-red-500 font-medium transition"
+                onClick={() => handleCategoryClick(cat)}
+                className="text-gray-700 hover:text-red-500 font-medium transition whitespace-nowrap"
               >
                 {cat}
               </button>
