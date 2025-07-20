@@ -33,6 +33,9 @@ export default function ProductForm({
     notes: initialData?.notes || "",
   });
 
+  const [compatibleDevices, setCompatibleDevices] = useState<string[]>(initialData?.compatible_devices || []);
+  const [newCompatibleDevice, setNewCompatibleDevice] = useState("");
+
   const [variations, setVariations] = useState<Variation[]>(initialData?.variations || []);
   const [showCustomCategory, setShowCustomCategory] = useState(false);
   const [customCategory, setCustomCategory] = useState("");
@@ -90,6 +93,7 @@ export default function ProductForm({
       }
 
       setVariations(initialData.variations || []);
+      setCompatibleDevices(initialData.compatible_devices || []);
     }
   }, [initialData]);
 
@@ -192,6 +196,7 @@ export default function ProductForm({
     onSubmit({
       ...formData,
       variations,
+      compatible_devices: compatibleDevices,
     });
   };
 
@@ -306,6 +311,60 @@ export default function ProductForm({
             value={formData.stock}
             onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
           />
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Dispositivos Compatíveis</label>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Ex: iPhone 12, Samsung Galaxy S21"
+                value={newCompatibleDevice}
+                onChange={(e) => setNewCompatibleDevice(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (newCompatibleDevice.trim() && !compatibleDevices.includes(newCompatibleDevice.trim())) {
+                      setCompatibleDevices([...compatibleDevices, newCompatibleDevice.trim()]);
+                      setNewCompatibleDevice("");
+                    }
+                  }
+                }}
+              />
+              <Button
+                type="button"
+                onClick={() => {
+                  if (newCompatibleDevice.trim() && !compatibleDevices.includes(newCompatibleDevice.trim())) {
+                    setCompatibleDevices([...compatibleDevices, newCompatibleDevice.trim()]);
+                    setNewCompatibleDevice("");
+                  }
+                }}
+              >
+                Adicionar
+              </Button>
+            </div>
+            
+            {compatibleDevices.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {compatibleDevices.map((device, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-sm"
+                  >
+                    {device}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCompatibleDevices(compatibleDevices.filter((_, i) => i !== index));
+                      }}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
           <Textarea
             name="notes"
             placeholder="Notas"

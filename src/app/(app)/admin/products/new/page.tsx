@@ -16,6 +16,7 @@ export default function NewProductPage() {
         type_labels: [],
         related_products: [],
         related_models: [],
+        compatible_devices: formData.compatible_devices || [],
       }, token);
       router.push("/admin/products");
     } catch (err) {

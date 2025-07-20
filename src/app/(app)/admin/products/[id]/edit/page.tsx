@@ -28,6 +28,7 @@ export default function EditProductPage() {
           stock: product.stock || "",
           notes: product.notes || "",
           variations: product.variations || [],
+          compatible_devices: product.compatible_devices || [],
         });
         setLoading(false);
       } catch (error) {
@@ -50,6 +51,7 @@ export default function EditProductPage() {
         type_labels: [],
         related_products: [],
         related_models: [],
+        compatible_devices: formData.compatible_devices || [],
       }, token);
       router.push("/admin/products");
     } catch (err) {

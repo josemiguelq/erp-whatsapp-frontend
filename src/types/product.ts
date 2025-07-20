@@ -14,4 +14,5 @@ export interface ProductFormData {
   stock: string;
   notes: string;
   variations: Variation[];
+  compatible_devices: string[];
 } 
