@@ -44,11 +44,6 @@ export default function ProductForm({
   const [showBrandSuggestions, setShowBrandSuggestions] = useState(false);
   const [filteredBrands, setFilteredBrands] = useState<string[]>([]);
   
-  // Estados para busca de modelos
-  const [modelSuggestions, setModelSuggestions] = useState<Model[]>([]);
-  const [showModelSuggestions, setShowModelSuggestions] = useState(false);
-  const [isSearchingModels, setIsSearchingModels] = useState(false);
-  
   // Estados para busca de dispositivos compatíveis
   const [compatibleDeviceSuggestions, setCompatibleDeviceSuggestions] = useState<Model[]>([]);
   const [showCompatibleDeviceSuggestions, setShowCompatibleDeviceSuggestions] = useState(false);
