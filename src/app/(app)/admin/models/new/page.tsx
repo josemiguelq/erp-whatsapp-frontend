@@ -71,9 +71,10 @@ export default function NewModelPage() {
       
       alert("Modelo criado com sucesso!");
       router.push("/admin/models");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Erro ao criar modelo:", error);
-      alert(error.message || "Erro ao criar modelo");
+      const errorMessage = error instanceof Error ? error.message : "Erro ao criar modelo";
+      alert(errorMessage);
     } finally {
       setIsLoading(false);
     }

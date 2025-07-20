@@ -135,7 +135,7 @@ export default function ProductForm({
       const copy = [...old];
       copy[index].price = newPrice;
       
-      // Se "mesmo preço para todos" estiver ativado e for mudança no primeiro item
+      // Se mesmo preço para todos estiver ativado e for mudança no primeiro item
       if (samePriceForAll && index === 0 && newPrice !== "") {
         copy.forEach((variation, i) => {
           if (i !== 0) {
@@ -264,9 +264,10 @@ export default function ProductForm({
       setNewCompatibleDevice("");
       
       alert("Dispositivo criado e adicionado com sucesso!");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Erro ao criar dispositivo:", error);
-      alert(error.message || "Erro ao criar dispositivo");
+      const errorMessage = error instanceof Error ? error.message : "Erro ao criar dispositivo";
+      alert(errorMessage);
     }
   };
 
