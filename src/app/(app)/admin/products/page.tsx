@@ -14,11 +14,13 @@ type Product = {
   model: string;
   type: string;
   brand: string;
+  name?: string;
   type_labels?: string[];
   stock?: string;
   related_products?: string[];
   related_models?: string[];
-  variations?: { price: number; description: string }[];
+  compatible_devices?: string[];
+  variations?: { price: number; description: string; images?: string[] }[];
   notes?: string;
 };
 
@@ -326,77 +328,177 @@ export default function ProductsPage() {
       )}
 
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="right" className="w-[400px] sm:w-[400px] md:w-[500px] max-w-[90vw] md:max-w-[50vw]">
-          <SheetHeader>
-            <SheetTitle className="text-left">{selectedProduct?.model || "Detalhes do Produto"}</SheetTitle>
+        <SheetContent side="right" className="w-[400px] sm:w-[450px] md:w-[550px] max-w-[90vw] md:max-w-[50vw] overflow-y-auto">
+          <SheetHeader className="border-b pb-4">
+            <SheetTitle className="text-left text-lg font-semibold">
+              {selectedProduct?.name || selectedProduct?.model || "Detalhes do Produto"}
+            </SheetTitle>
+            <p className="text-sm text-gray-500 text-left">
+              ID: {selectedProduct?._id}
+            </p>
           </SheetHeader>
-          <div className="space-y-4 mt-4">
-            <div className="grid grid-cols-1 gap-3">
-              <div>
-                <strong className="text-sm font-medium">ID:</strong>
-                <p className="text-sm text-gray-600">{selectedProduct?._id}</p>
+          
+          <div className="space-y-6 mt-6">
+            {/* Informações Básicas */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Informações Básicas</h3>
+              <div className="grid grid-cols-1 gap-3">
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-600">Modelo:</span>
+                  <span className="text-sm text-gray-900">{selectedProduct?.model}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-600">Categoria:</span>
+                  <span className="text-sm text-gray-900">{selectedProduct?.type}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-600">Marca:</span>
+                  <span className="text-sm text-gray-900">{selectedProduct?.brand}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-600">Estoque:</span>
+                  <span className="text-sm text-gray-900">{selectedProduct?.stock || "N/A"}</span>
+                </div>
               </div>
-              <div>
-                <strong className="text-sm font-medium">Tipo:</strong>
-                <p className="text-sm text-gray-600">{selectedProduct?.type}</p>
+            </div>
+
+            {/* Dispositivos Compatíveis */}
+            {selectedProduct?.compatible_devices && selectedProduct.compatible_devices.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Dispositivos Compatíveis</h3>
+                <div className="flex flex-wrap gap-2">
+                  {selectedProduct.compatible_devices.map((device, i) => (
+                    <span
+                      key={i}
+                      className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800"
+                    >
+                      {device}
+                    </span>
+                  ))}
+                </div>
               </div>
-              <div>
-                <strong className="text-sm font-medium">Estoque:</strong>
-                <p className="text-sm text-gray-600">{selectedProduct?.stock}</p>
+            )}
+
+            {/* Variações */}
+            {selectedProduct?.variations && selectedProduct.variations.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Variações</h3>
+                <div className="space-y-3">
+                  {selectedProduct.variations.map((variation, i) => (
+                    <div key={i} className="bg-gray-50 rounded-lg p-3">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-sm font-medium text-gray-900">
+                          {variation.description}
+                        </span>
+                        <span className="text-sm font-semibold text-green-600">
+                          R$ {typeof variation.price === 'number' ? variation.price.toFixed(2) : variation.price}
+                        </span>
+                      </div>
+                      {variation.images && variation.images.length > 0 && (
+                        <div className="flex gap-2 mt-2">
+                          {variation.images.slice(0, 3).map((image, imgIndex) => (
+                            <img
+                              key={imgIndex}
+                              src={image}
+                              alt={`Imagem ${imgIndex + 1}`}
+                              className="w-12 h-12 object-cover rounded border"
+                            />
+                          ))}
+                          {variation.images.length > 3 && (
+                            <div className="w-12 h-12 bg-gray-200 rounded border flex items-center justify-center">
+                              <span className="text-xs text-gray-600">+{variation.images.length - 3}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
-              
-              {selectedProduct?.type_labels && selectedProduct.type_labels.length > 0 && (
-                <div>
-                  <strong className="text-sm font-medium">Etiquetas:</strong>
-                  <ul className="list-disc ml-4 mt-1">
-                    {selectedProduct.type_labels.map((label, i) => (
-                      <li key={i} className="text-sm text-gray-600">{label}</li>
-                    ))}
-                  </ul>
+            )}
+
+            {/* Relacionamentos */}
+            {((selectedProduct?.related_models && selectedProduct.related_models.length > 0) ||
+              (selectedProduct?.related_products && selectedProduct.related_products.length > 0) ||
+              (selectedProduct?.type_labels && selectedProduct.type_labels.length > 0)) && (
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Relacionamentos</h3>
+                
+                {selectedProduct?.type_labels && selectedProduct.type_labels.length > 0 && (
+                  <div>
+                    <span className="text-sm font-medium text-gray-600">Etiquetas:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {selectedProduct.type_labels.map((label, i) => (
+                        <span
+                          key={i}
+                          className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800"
+                        >
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {selectedProduct?.related_models && selectedProduct.related_models.length > 0 && (
+                  <div>
+                    <span className="text-sm font-medium text-gray-600">Modelos Relacionados:</span>
+                    <ul className="mt-1 space-y-1">
+                      {selectedProduct.related_models.map((model, i) => (
+                        <li key={i} className="text-sm text-gray-700 flex items-center">
+                          <span className="w-1 h-1 bg-gray-400 rounded-full mr-2"></span>
+                          {model}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {selectedProduct?.related_products && selectedProduct.related_products.length > 0 && (
+                  <div>
+                    <span className="text-sm font-medium text-gray-600">Produtos Relacionados:</span>
+                    <ul className="mt-1 space-y-1">
+                      {selectedProduct.related_products.map((product, i) => (
+                        <li key={i} className="text-sm text-gray-700 flex items-center">
+                          <span className="w-1 h-1 bg-gray-400 rounded-full mr-2"></span>
+                          {product}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Observações */}
+            {selectedProduct?.notes && (
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Observações</h3>
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3">
+                  <p className="text-sm text-gray-700">{selectedProduct.notes}</p>
                 </div>
-              )}
-              
-              {selectedProduct?.related_models && selectedProduct.related_models.length > 0 && (
-                <div>
-                  <strong className="text-sm font-medium">Modelos Relacionados:</strong>
-                  <ul className="list-disc ml-4 mt-1">
-                    {selectedProduct.related_models.map((model, i) => (
-                      <li key={i} className="text-sm text-gray-600">{model}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              
-              {selectedProduct?.related_products && selectedProduct.related_products.length > 0 && (
-                <div>
-                  <strong className="text-sm font-medium">Produtos Relacionados:</strong>
-                  <ul className="list-disc ml-4 mt-1">
-                    {selectedProduct.related_products.map((prod, i) => (
-                      <li key={i} className="text-sm text-gray-600">{prod}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              
-              {selectedProduct?.variations && selectedProduct.variations.length > 0 && (
-                <div>
-                  <strong className="text-sm font-medium">Variações:</strong>
-                  <ul className="list-disc ml-4 mt-1">
-                    {selectedProduct.variations.map((v, i) => (
-                      <li key={i} className="text-sm text-gray-600">
-                        {v.description} - R$ {v.price.toFixed(2)}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              
-              {selectedProduct?.notes && (
-                <div>
-                  <strong className="text-sm font-medium">Notas:</strong>
-                  <p className="text-sm text-gray-600 mt-1">{selectedProduct.notes}</p>
-                </div>
-              )}
+              </div>
+            )}
+
+            {/* Ações */}
+            <div className="space-y-3 pt-4 border-t">
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => router.push(`/admin/products/${selectedProduct?._id}/edit`)} 
+                  className="flex-1"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Editar
+                </Button>
+                <Button 
+                  variant="destructive"
+                  onClick={() => selectedProduct && handleDeleteProduct(selectedProduct._id, selectedProduct.model)} 
+                  className="flex-1"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Excluir
+                </Button>
+              </div>
             </div>
           </div>
         </SheetContent>
