@@ -48,7 +48,6 @@ export default function ProductForm({
   const [modelSuggestions, setModelSuggestions] = useState<Model[]>([]);
   const [showModelSuggestions, setShowModelSuggestions] = useState(false);
   const [isSearchingModels, setIsSearchingModels] = useState(false);
-  const [showCreateModelDialog, setShowCreateModelDialog] = useState(false);
   
   // Estados para busca de dispositivos compatíveis
   const [compatibleDeviceSuggestions, setCompatibleDeviceSuggestions] = useState<Model[]>([]);
@@ -202,53 +201,6 @@ export default function ProductForm({
     setFormData({ ...formData, brand });
     setShowBrandSuggestions(false);
     setFilteredBrands([]);
-  };
-
-  const handleModelSearch = async (value: string) => {
-    setFormData({ ...formData, model: value });
-    
-    if (value.length >= 2) {
-      setIsSearchingModels(true);
-      try {
-        const token = localStorage.getItem("token");
-        const models = await searchModels(value, token);
-        setModelSuggestions(models);
-        setShowModelSuggestions(models.length > 0);
-      } catch (error) {
-        console.error("Erro ao buscar modelos:", error);
-      } finally {
-        setIsSearchingModels(false);
-      }
-    } else {
-      setShowModelSuggestions(false);
-      setModelSuggestions([]);
-    }
-  };
-
-  const selectModel = (model: Model) => {
-    setFormData({ 
-      ...formData, 
-      model: model.model,
-      brand: model.brand // Atualiza a marca automaticamente
-    });
-    setShowModelSuggestions(false);
-    setModelSuggestions([]);
-  };
-
-  const handleCreateNewModel = async () => {
-    if (!formData.model.trim() || !formData.brand.trim()) {
-      alert("Por favor, preencha marca e modelo antes de criar");
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem("token");
-      await createModel(formData.brand, formData.model, token);
-      alert("Modelo criado com sucesso!");
-    } catch (error: any) {
-      console.error("Erro ao criar modelo:", error);
-      alert(error.message || "Erro ao criar modelo");
-    }
   };
 
   const handleCompatibleDeviceSearch = async (value: string) => {
