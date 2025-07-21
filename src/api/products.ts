@@ -5,6 +5,7 @@ interface FetchProductsParams {
   limit?: number;
   category?: string;
   name?: string;
+  compatible_devices?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -17,6 +18,7 @@ export async function fetchProducts(token: string|null, params: FetchProductsPar
     if (params.limit) queryParams.append('limit', params.limit.toString());
     if (params.category) queryParams.append('category', params.category);
     if (params.name) queryParams.append('name', params.name);
+    if (params.compatible_devices) queryParams.append('compatible_devices', params.compatible_devices);
     
     const queryString = queryParams.toString();
     const url = `${API_URL}/api/products${queryString ? `?${queryString}` : ''}`;

@@ -3,11 +3,12 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { fetchProducts, deleteProduct } from "@/api/products";
+import { searchModels, type Model } from "@/api/models";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, Eye, Edit, Trash2, Search, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, Search, ChevronLeft, ChevronRight, ChevronDown, X } from "lucide-react";
 import { categories } from "@/types/product";
 
 type Product = {
@@ -44,6 +45,13 @@ export default function ProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [nameFilter, setNameFilter] = useState("");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [compatibleDevicesFilter, setCompatibleDevicesFilter] = useState<string[]>([]);
+  
+  // Busca de dispositivos compatíveis
+  const [newCompatibleDeviceSearch, setNewCompatibleDeviceSearch] = useState("");
+  const [compatibleDeviceSuggestions, setCompatibleDeviceSuggestions] = useState<Model[]>([]);
+  const [showCompatibleDeviceSuggestions, setShowCompatibleDeviceSuggestions] = useState(false);
+  const [isSearchingCompatibleDevices, setIsSearchingCompatibleDevices] = useState(false);
   
   // Paginação
   const [pagination, setPagination] = useState<PaginationData>({
@@ -80,7 +88,8 @@ export default function ProductsPage() {
         page,
         limit: pagination.limit,
         category: categoryFilter || undefined,
-        name: nameFilter || undefined
+        name: nameFilter || undefined,
+        compatible_devices: compatibleDevicesFilter.length > 0 ? compatibleDevicesFilter.join(',') : undefined
       });
       
       setProducts(data.products);
@@ -104,6 +113,55 @@ export default function ProductsPage() {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
       loadProducts(newPage);
     }
+  };
+
+  // Função para buscar dispositivos compatíveis (similar ao ProductForm)
+  const handleCompatibleDeviceSearch = async (value: string) => {
+    setNewCompatibleDeviceSearch(value);
+    
+    if (value.length < 2) {
+      setCompatibleDeviceSuggestions([]);
+      setShowCompatibleDeviceSuggestions(false);
+      return;
+    }
+
+    setIsSearchingCompatibleDevices(true);
+    try {
+      const token = localStorage.getItem("token");
+      const models = await searchModels(value, token);
+      setCompatibleDeviceSuggestions(models);
+      setShowCompatibleDeviceSuggestions(models.length > 0);
+    } catch (error) {
+      console.error("Erro ao buscar modelos:", error);
+      setCompatibleDeviceSuggestions([]);
+      setShowCompatibleDeviceSuggestions(false);
+    } finally {
+      setIsSearchingCompatibleDevices(false);
+    }
+  };
+
+  const selectCompatibleDevice = (model: Model) => {
+    const deviceKey = `${model.brand} ${model.model}`;
+    if (!compatibleDevicesFilter.includes(deviceKey)) {
+      setCompatibleDevicesFilter([...compatibleDevicesFilter, deviceKey]);
+    }
+    setNewCompatibleDeviceSearch("");
+    setCompatibleDeviceSuggestions([]);
+    setShowCompatibleDeviceSuggestions(false);
+  };
+
+  const addCompatibleDeviceFilter = () => {
+    const deviceKey = newCompatibleDeviceSearch.trim();
+    if (deviceKey && !compatibleDevicesFilter.includes(deviceKey)) {
+      setCompatibleDevicesFilter([...compatibleDevicesFilter, deviceKey]);
+      setNewCompatibleDeviceSearch("");
+      setCompatibleDeviceSuggestions([]);
+      setShowCompatibleDeviceSuggestions(false);
+    }
+  };
+
+  const removeCompatibleDeviceFilter = (deviceKey: string) => {
+    setCompatibleDevicesFilter(compatibleDevicesFilter.filter(device => device !== deviceKey));
   };
 
   const openSidebar = (product: Product) => {
@@ -149,7 +207,7 @@ export default function ProductsPage() {
 
       {/* Filtros */}
       <Card className="p-4">
-        <div className="flex flex-col md:flex-row gap-4 items-end">
+        <div className="flex flex-col lg:flex-row gap-4 items-end">
           <div className="flex-1">
             <label className="block text-sm font-medium mb-2">Buscar por nome/modelo</label>
             <Input
@@ -203,8 +261,86 @@ export default function ProductsPage() {
               )}
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={handleSearch} className="flex items-center gap-2" disabled={loading}>
+          <div className="flex-1">
+            <label className="block text-sm font-medium mb-2">Dispositivos Compatíveis</label>
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <Input
+                  placeholder="Digite para buscar dispositivo (ex: Apple iPhone 12)"
+                  value={newCompatibleDeviceSearch}
+                  onChange={(e) => handleCompatibleDeviceSearch(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addCompatibleDeviceFilter();
+                    }
+                  }}
+                  onFocus={() => {
+                    if (newCompatibleDeviceSearch.length >= 2) {
+                      setShowCompatibleDeviceSuggestions(compatibleDeviceSuggestions.length > 0);
+                    }
+                  }}
+                  onBlur={() => {
+                    // Delay para permitir clique nas sugestões
+                    setTimeout(() => setShowCompatibleDeviceSuggestions(false), 200);
+                  }}
+                />
+                
+                {isSearchingCompatibleDevices && (
+                  <div className="absolute right-3 top-3">
+                    <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+                  </div>
+                )}
+                
+                {showCompatibleDeviceSuggestions && compatibleDeviceSuggestions.length > 0 && (
+                  <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-40 overflow-y-auto mt-1">
+                    {compatibleDeviceSuggestions.map((model) => (
+                      <button
+                        key={model._id}
+                        type="button"
+                        className="w-full text-left px-3 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none border-b border-gray-100 last:border-b-0"
+                        onClick={() => selectCompatibleDevice(model)}
+                      >
+                        <div className="font-medium">{model.brand} {model.model}</div>
+                        <div className="text-sm text-gray-500">Clique para adicionar</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              <Button
+                type="button"
+                onClick={addCompatibleDeviceFilter}
+                className="whitespace-nowrap"
+              >
+                Adicionar
+              </Button>
+            </div>
+            
+            {/* Mostrar dispositivos selecionados */}
+            {compatibleDevicesFilter.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {compatibleDevicesFilter.map((device, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800"
+                  >
+                    {device}
+                    <button
+                      type="button"
+                      onClick={() => removeCompatibleDeviceFilter(device)}
+                      className="ml-1 hover:text-blue-600"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="flex gap-2 lg:flex-col lg:justify-end">
+            <Button onClick={handleSearch} className="flex items-center gap-2 w-full lg:w-auto" disabled={loading}>
               <Search className="w-4 h-4" />
               Buscar
             </Button>
@@ -213,10 +349,15 @@ export default function ProductsPage() {
               onClick={() => {
                 setNameFilter("");
                 setCategoryFilter("");
+                setCompatibleDevicesFilter([]);
+                setNewCompatibleDeviceSearch("");
+                setCompatibleDeviceSuggestions([]);
                 setShowCategoryDropdown(false);
+                setShowCompatibleDeviceSuggestions(false);
                 setTimeout(() => loadProducts(1), 100);
               }}
               disabled={loading}
+              className="w-full lg:w-auto"
             >
               Limpar
             </Button>

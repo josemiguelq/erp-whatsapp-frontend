@@ -101,4 +101,21 @@ export async function fetchModels(token: string | null, params: ListModelsParams
 
   if (!res.ok) throw new Error("Erro ao buscar modelos");
   return res.json();
+}
+
+export async function fetchAllModels(token: string | null): Promise<Model[]> {
+  const queryParams = new URLSearchParams();
+  queryParams.append('limit', '1000'); // Buscar muitos modelos de uma vez
+  
+  const url = `${API_URL}/api/models?${queryParams.toString()}`;
+
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error("Erro ao buscar modelos");
+  const data = await res.json();
+  return data.models || [];
 } 
