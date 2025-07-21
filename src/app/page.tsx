@@ -81,7 +81,7 @@ export default function HomePage() {
           <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-sm text-blue-800">
               Filtros ativos: 
-              {searchTerm && <span className="ml-1 font-medium">Busca: "{searchTerm}"</span>}
+              {searchTerm && <span className="ml-1 font-medium">Busca: {searchTerm}</span>}
               {searchTerm && categoryFilter && <span className="mx-1">•</span>}
               {categoryFilter && <span className="ml-1 font-medium">Categoria: {categoryFilter}</span>}
             </p>
