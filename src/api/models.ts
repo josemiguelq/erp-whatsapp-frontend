@@ -4,6 +4,7 @@ export interface Model {
   _id: string;
   brand: string;
   model: string;
+  createdAt: string;
 }
 
 export interface ListModelsParams {

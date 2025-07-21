@@ -128,27 +128,38 @@ export default function ModelsPage() {
                 <div className="hidden sm:grid grid-cols-3 gap-4 p-3 bg-gray-50 rounded-t-lg font-medium text-gray-700">
                   <div>Marca</div>
                   <div>Modelo</div>
-                  <div>ID</div>
+                  <div>Criado em</div>
                 </div>
 
                 {/* Itens da tabela */}
                 <div className="divide-y divide-gray-200">
-                  {models.map((model) => (
-                    <div key={model._id} className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 hover:bg-gray-50">
-                      <div className="flex flex-col sm:block">
-                        <span className="text-sm text-gray-500 sm:hidden">Marca:</span>
-                        <span className="font-medium">{model.brand}</span>
+                  {models.map((model) => {
+                    const createdDate = new Date(model.createdAt);
+                    const formattedDate = createdDate.toLocaleDateString('pt-BR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    });
+
+                    return (
+                      <div key={model._id} className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 hover:bg-gray-50">
+                        <div className="flex flex-col sm:block">
+                          <span className="text-sm text-gray-500 sm:hidden">Marca:</span>
+                          <span className="font-medium">{model.brand}</span>
+                        </div>
+                        <div className="flex flex-col sm:block">
+                          <span className="text-sm text-gray-500 sm:hidden">Modelo:</span>
+                          <span>{model.model}</span>
+                        </div>
+                        <div className="flex flex-col sm:block">
+                          <span className="text-sm text-gray-500 sm:hidden">Criado em:</span>
+                          <span className="text-xs text-gray-500">{formattedDate}</span>
+                        </div>
                       </div>
-                      <div className="flex flex-col sm:block">
-                        <span className="text-sm text-gray-500 sm:hidden">Modelo:</span>
-                        <span>{model.model}</span>
-                      </div>
-                      <div className="flex flex-col sm:block">
-                        <span className="text-sm text-gray-500 sm:hidden">ID:</span>
-                        <span className="text-xs text-gray-500 font-mono">{model._id}</span>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </>
             )}
