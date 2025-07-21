@@ -126,16 +126,53 @@ export default function ModelsPage() {
               </div>
             ) : (
               <>
-                {/* Header da tabela */}
-                <div className="hidden sm:grid grid-cols-4 gap-4 p-3 bg-gray-50 rounded-t-lg font-medium text-gray-700">
-                  <div>Marca</div>
-                  <div>Modelo</div>
-                  <div>Criado em</div>
-                  <div>Ações</div>
+                {/* Desktop Table */}
+                <div className="hidden md:block w-full overflow-x-auto">
+                  <table className="min-w-full border rounded">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="p-2 text-left">Marca</th>
+                        <th className="p-2 text-left">Modelo</th>
+                        <th className="p-2 text-left">Criado em</th>
+                        <th className="p-2 text-left">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {models.map((model) => {
+                        const createdDate = new Date(model.createdAt);
+                        const formattedDate = createdDate.toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        });
+
+                        return (
+                          <tr key={model._id} className="border-t hover:bg-gray-50">
+                            <td className="p-2 font-medium">{model.brand}</td>
+                            <td className="p-2">{model.model}</td>
+                            <td className="p-2 text-xs text-gray-500">{formattedDate}</td>
+                            <td className="p-2">
+                              <div className="flex gap-2">
+                                <Button 
+                                  onClick={() => router.push(`/admin/models/${model._id}/edit`)} 
+                                  size="sm" 
+                                  variant="outline"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
 
-                {/* Itens da tabela */}
-                <div className="divide-y divide-gray-200">
+                {/* Mobile Cards */}
+                <div className="md:hidden space-y-3">
                   {models.map((model) => {
                     const createdDate = new Date(model.createdAt);
                     const formattedDate = createdDate.toLocaleDateString('pt-BR', {
@@ -147,30 +184,23 @@ export default function ModelsPage() {
                     });
 
                     return (
-                      <div key={model._id} className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 hover:bg-gray-50">
-                        <div className="flex flex-col sm:block">
-                          <span className="text-sm text-gray-500 sm:hidden">Marca:</span>
-                          <span className="font-medium">{model.brand}</span>
-                        </div>
-                        <div className="flex flex-col sm:block">
-                          <span className="text-sm text-gray-500 sm:hidden">Modelo:</span>
-                          <span>{model.model}</span>
-                        </div>
-                        <div className="flex flex-col sm:block">
-                          <span className="text-sm text-gray-500 sm:hidden">Criado em:</span>
-                          <span className="text-xs text-gray-500">{formattedDate}</span>
-                        </div>
-                        <div className="flex flex-col sm:block">
-                          <span className="text-sm text-gray-500 sm:hidden">Ações:</span>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => router.push(`/admin/models/${model._id}/edit`)}
-                            className="flex items-center gap-1 w-fit"
-                          >
-                            <Edit size={14} />
-                            Editar
-                          </Button>
+                      <div key={model._id} className="border rounded-lg p-3">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h3 className="font-medium">{model.brand}</h3>
+                            <p className="text-sm text-gray-600">{model.model}</p>
+                            <p className="text-xs text-gray-500 mt-1">{formattedDate}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button 
+                              onClick={() => router.push(`/admin/models/${model._id}/edit`)} 
+                              size="sm" 
+                              variant="outline"
+                            >
+                              <Edit className="w-4 h-4 mr-2" />
+                              Editar
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     );
