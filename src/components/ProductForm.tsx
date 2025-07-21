@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { searchModels, createModel, Model } from "@/api/models";
 
-import { Variation, ProductFormData } from "@/types/product";
+import { Variation, ProductFormData, categories } from "@/types/product";
 
 interface ProductFormProps {
   initialData?: ProductFormData;
@@ -55,21 +55,6 @@ export default function ProductForm({
   const [newModelData, setNewModelData] = useState({ brand: "", model: "" });
   const [isCreatingModel, setIsCreatingModel] = useState(false);
   const [showBrandSuggestionsModal, setShowBrandSuggestionsModal] = useState(false);
-
-  const categories = [
-    "Bateria",
-    "Touch/Display",
-    "Cabo",
-    "Carregador",
-    "Capinha",
-    "Película",
-    "Fone de Ouvido",
-    "Alto-falante",
-    "Microfone",
-    "Câmera",
-    "Placa Mãe",
-    "Outros"
-  ];
 
   const brands = [
     "Apple",
@@ -373,7 +358,7 @@ export default function ProductForm({
             <label className="text-sm font-medium">Marca</label>
             <Input
               name="brand"
-              placeholder="Digite a marca da peça"
+              placeholder="Digite a marca da peça (ou deixar vazio)"
               value={formData.brand}
               onChange={(e) => handleBrandChange(e.target.value)}
               onFocus={() => {

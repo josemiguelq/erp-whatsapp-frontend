@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { fetchProducts, deleteProduct } from "@/api/products";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, Eye, Edit, Trash2, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, Search, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { categories } from "@/types/product";
 
 type Product = {
   _id: string;
@@ -42,6 +43,7 @@ export default function ProductsPage() {
   // Filtros
   const [categoryFilter, setCategoryFilter] = useState("");
   const [nameFilter, setNameFilter] = useState("");
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   
   // Paginação
   const [pagination, setPagination] = useState<PaginationData>({
@@ -54,6 +56,21 @@ export default function ProductsPage() {
   });
   
   const router = useRouter();
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+        setShowCategoryDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const loadProducts = async (page = 1) => {
     setLoading(true);
@@ -144,12 +161,47 @@ export default function ProductsPage() {
           </div>
           <div className="flex-1">
             <label className="block text-sm font-medium mb-2">Categoria</label>
-            <Input
-              placeholder="Ex: Bateria, Touch, Cabo..."
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-            />
+            <div className="relative" ref={categoryDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={loading}
+              >
+                <span className={categoryFilter ? "text-foreground" : "text-muted-foreground"}>
+                  {categoryFilter || "Todas as categorias"}
+                </span>
+                <ChevronDown className="h-4 w-4 opacity-50" />
+              </button>
+              
+              {showCategoryDropdown && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCategoryFilter("");
+                      setShowCategoryDropdown(false);
+                    }}
+                    className="w-full text-left px-3 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none text-sm border-b"
+                  >
+                    Todas as categorias
+                  </button>
+                  {categories.map((category) => (
+                    <button
+                      key={category}
+                      type="button"
+                      onClick={() => {
+                        setCategoryFilter(category);
+                        setShowCategoryDropdown(false);
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none text-sm"
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex gap-2">
             <Button onClick={handleSearch} className="flex items-center gap-2" disabled={loading}>
@@ -161,6 +213,7 @@ export default function ProductsPage() {
               onClick={() => {
                 setNameFilter("");
                 setCategoryFilter("");
+                setShowCategoryDropdown(false);
                 setTimeout(() => loadProducts(1), 100);
               }}
               disabled={loading}
@@ -186,7 +239,7 @@ export default function ProductsPage() {
           <table className="min-w-full border rounded">
             <thead className="bg-gray-100">
               <tr>
-                <th className="p-2 text-left">Modelo</th>
+                <th className="p-2 text-left">Nome</th>
                 <th className="p-2 text-left">Tipo</th>
                 <th className="p-2 text-left">Ações</th>
               </tr>
@@ -207,7 +260,7 @@ export default function ProductsPage() {
               ) : (
                 products.map((p, idx) => (
                   <tr key={idx} className="border-t hover:bg-gray-50">
-                    <td className="p-2">{p.model}</td>
+                    <td className="p-2">{p.name}</td>
                     <td className="p-2">{p.type}</td>
                     <td className="p-2">
                       <div className="flex gap-2">
@@ -248,7 +301,7 @@ export default function ProductsPage() {
               <div key={idx} className="border rounded-lg p-3">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <h3 className="font-medium">{p.model}</h3>
+                    <h3 className="font-medium">{p.name}</h3>
                     <p className="text-sm text-gray-600">{p.type}</p>
                   </div>
                   <div className="flex gap-2">
