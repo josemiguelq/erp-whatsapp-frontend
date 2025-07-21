@@ -53,6 +53,36 @@ export async function createModel(brand: string, model: string, token: string | 
   return result.model;
 }
 
+export async function getModelById(id: string, token: string | null): Promise<Model> {
+  const res = await fetch(`${API_URL}/api/models/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error("Erro ao buscar modelo");
+  return res.json();
+}
+
+export async function updateModel(id: string, brand: string, model: string, token: string | null): Promise<Model> {
+  const res = await fetch(`${API_URL}/api/models/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ brand, model }),
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || "Erro ao atualizar modelo");
+  }
+  
+  const result = await res.json();
+  return result.model;
+}
+
 export async function fetchModels(token: string | null, params: ListModelsParams = {}) {
   const queryParams = new URLSearchParams();
   if (params.page) queryParams.append('page', params.page.toString());

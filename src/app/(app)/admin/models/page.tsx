@@ -5,12 +5,14 @@ import { fetchModels, Model, PaginationData } from "@/api/models";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, ChevronLeft, ChevronRight, Package, Plus } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Package, Plus, Edit } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function ModelsPage() {
   const [models, setModels] = useState<Model[]>([]);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
   
   // Filtros
   const [brandFilter, setBrandFilter] = useState("");
@@ -125,10 +127,11 @@ export default function ModelsPage() {
             ) : (
               <>
                 {/* Header da tabela */}
-                <div className="hidden sm:grid grid-cols-3 gap-4 p-3 bg-gray-50 rounded-t-lg font-medium text-gray-700">
+                <div className="hidden sm:grid grid-cols-4 gap-4 p-3 bg-gray-50 rounded-t-lg font-medium text-gray-700">
                   <div>Marca</div>
                   <div>Modelo</div>
                   <div>Criado em</div>
+                  <div>Ações</div>
                 </div>
 
                 {/* Itens da tabela */}
@@ -144,7 +147,7 @@ export default function ModelsPage() {
                     });
 
                     return (
-                      <div key={model._id} className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 hover:bg-gray-50">
+                      <div key={model._id} className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 hover:bg-gray-50">
                         <div className="flex flex-col sm:block">
                           <span className="text-sm text-gray-500 sm:hidden">Marca:</span>
                           <span className="font-medium">{model.brand}</span>
@@ -156,6 +159,18 @@ export default function ModelsPage() {
                         <div className="flex flex-col sm:block">
                           <span className="text-sm text-gray-500 sm:hidden">Criado em:</span>
                           <span className="text-xs text-gray-500">{formattedDate}</span>
+                        </div>
+                        <div className="flex flex-col sm:block">
+                          <span className="text-sm text-gray-500 sm:hidden">Ações:</span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => router.push(`/admin/models/${model._id}/edit`)}
+                            className="flex items-center gap-1 w-fit"
+                          >
+                            <Edit size={14} />
+                            Editar
+                          </Button>
                         </div>
                       </div>
                     );
