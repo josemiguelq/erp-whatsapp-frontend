@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { searchModels, createModel, Model } from "@/api/models";
 
 import { Variation, ProductFormData } from "@/types/product";
@@ -48,6 +49,12 @@ export default function ProductForm({
   const [compatibleDeviceSuggestions, setCompatibleDeviceSuggestions] = useState<Model[]>([]);
   const [showCompatibleDeviceSuggestions, setShowCompatibleDeviceSuggestions] = useState(false);
   const [isSearchingCompatibleDevices, setIsSearchingCompatibleDevices] = useState(false);
+  
+  // Estados para modal de criar modelo
+  const [showCreateModelDialog, setShowCreateModelDialog] = useState(false);
+  const [newModelData, setNewModelData] = useState({ brand: "", model: "" });
+  const [isCreatingModel, setIsCreatingModel] = useState(false);
+  const [showBrandSuggestionsModal, setShowBrandSuggestionsModal] = useState(false);
 
   const categories = [
     "Bateria",
@@ -68,7 +75,17 @@ export default function ProductForm({
     "Apple",
     "Samsung",
     "Xiaomi", 
-    "Motorola"
+    "Motorola",
+    "Huawei",
+    "OnePlus",
+    "Oppo",
+    "Vivo",
+    "Realme",
+    "LG",
+    "Sony",
+    "Nokia",
+    "Google",
+    "Nothing"
   ];
 
   useEffect(() => {
@@ -236,38 +253,51 @@ export default function ProductForm({
     }
   };
 
-  const handleCreateNewCompatibleDevice = async () => {
-    if (!newCompatibleDevice.trim()) {
-      alert("Por favor, digite um dispositivo compatível");
-      return;
-    }
-
-    // Extrair marca e modelo do dispositivo (assumindo formato "Marca Modelo")
+  const handleCreateNewCompatibleDevice = () => {
+    // Tentar extrair marca e modelo do texto digitado
     const parts = newCompatibleDevice.trim().split(" ");
-    if (parts.length < 2) {
-      alert("Por favor, digite no formato 'Marca Modelo' (ex: Apple iPhone 12)");
+    if (parts.length >= 2) {
+      setNewModelData({
+        brand: "",
+        model: newCompatibleDevice
+      });
+    } else {
+      setNewModelData({ brand: "", model: newCompatibleDevice.trim() });
+    }
+    
+    setShowCreateModelDialog(true);
+  };
+
+  const handleCreateModel = async () => {
+    if (!newModelData.brand.trim() || !newModelData.model.trim()) {
+      alert("Por favor, preencha marca e modelo");
       return;
     }
 
-    const brand = parts[0];
-    const model = parts.slice(1).join(" ");
-
+    setIsCreatingModel(true);
     try {
       const token = localStorage.getItem("token");
-      await createModel(brand, model, token);
+      await createModel(newModelData.brand, newModelData.model, token);
       
       // Adicionar à lista de dispositivos compatíveis
-      const deviceName = `${brand} ${model}`;
+      const deviceName = `${newModelData.brand} ${newModelData.model}`;
       if (!compatibleDevices.includes(deviceName)) {
         setCompatibleDevices([...compatibleDevices, deviceName]);
       }
-      setNewCompatibleDevice("");
       
-      alert("Dispositivo criado e adicionado com sucesso!");
+      // Limpar e fechar
+      setNewCompatibleDevice("");
+      setNewModelData({ brand: "", model: "" });
+      setShowCreateModelDialog(false);
+      setShowBrandSuggestionsModal(false);
+      
+      alert("Modelo criado e adicionado com sucesso!");
     } catch (error: unknown) {
-      console.error("Erro ao criar dispositivo:", error);
-      const errorMessage = error instanceof Error ? error.message : "Erro ao criar dispositivo";
+      console.error("Erro ao criar modelo:", error);
+      const errorMessage = error instanceof Error ? error.message : "Erro ao criar modelo";
       alert(errorMessage);
+    } finally {
+      setIsCreatingModel(false);
     }
   };
 
@@ -674,6 +704,97 @@ export default function ProductForm({
           </Button>
         </div>
       </Card>
+
+      {/* Modal para criar novo modelo */}
+      <Dialog 
+        open={showCreateModelDialog} 
+        onOpenChange={(open) => {
+          setShowCreateModelDialog(open);
+          if (!open) {
+            setNewModelData({ brand: "", model: "" });
+            setShowBrandSuggestionsModal(false);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Criar Novo Modelo</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 mt-4">
+                         <div className="space-y-2 relative">
+               <label className="text-sm font-medium">Marca</label>
+               <Input
+                 placeholder="Ex: Apple, Samsung, Xiaomi"
+                 value={newModelData.brand}
+                 onChange={(e) => setNewModelData({ ...newModelData, brand: e.target.value })}
+                 onFocus={() => setShowBrandSuggestionsModal(true)}
+                 onBlur={() => setTimeout(() => setShowBrandSuggestionsModal(false), 200)}
+                 disabled={isCreatingModel}
+               />
+               
+               {showBrandSuggestionsModal && (
+                 <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                   {brands
+                     .filter(brand => brand.toLowerCase().includes(newModelData.brand.toLowerCase()))
+                     .map((brand) => (
+                       <button
+                         key={brand}
+                         type="button"
+                         onClick={() => {
+                           setNewModelData({ ...newModelData, brand });
+                           setShowBrandSuggestionsModal(false);
+                         }}
+                         className="w-full text-left px-3 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none text-sm"
+                       >
+                         {brand}
+                       </button>
+                     ))
+                   }
+                 </div>
+               )}
+             </div>
+            
+                         <div className="space-y-2">
+               <label className="text-sm font-medium">Modelo</label>
+               <Input
+                 placeholder="Ex: iPhone 15, Galaxy S24, Redmi Note 13"
+                 value={newModelData.model}
+                 onChange={(e) => setNewModelData({ ...newModelData, model: e.target.value })}
+                 disabled={isCreatingModel}
+                 onKeyPress={(e) => {
+                   if (e.key === 'Enter' && newModelData.brand.trim() && newModelData.model.trim()) {
+                     handleCreateModel();
+                   }
+                 }}
+               />
+             </div>
+            
+            <div className="flex gap-3 pt-4">
+                             <Button
+                 variant="outline"
+                 onClick={() => {
+                   setShowCreateModelDialog(false);
+                   setNewModelData({ brand: "", model: "" });
+                   setShowBrandSuggestionsModal(false);
+                 }}
+                 disabled={isCreatingModel}
+                 className="flex-1"
+               >
+                 Cancelar
+               </Button>
+              
+              <Button
+                onClick={handleCreateModel}
+                disabled={isCreatingModel || !newModelData.brand.trim() || !newModelData.model.trim()}
+                className="flex-1"
+              >
+                {isCreatingModel ? "Criando..." : "Criar Modelo"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 } 
