@@ -18,6 +18,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     { name: "Dashboard", href: "/admin/dashboard" },
     { name: "Vender", href: "/admin/pos" },
     { name: "Produtos", href: "/admin/products" },
+    { name: "Categorias", href: "/admin/categories" },
     { name: "Modelos", href: "/admin/models" },
     { name: "Clientes", href: "/admin/customers" },
     { name: "WhatsApp Agent", href: "/admin/whatsapp" },
