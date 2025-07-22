@@ -9,12 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Plus, Eye, Edit, Trash2, Search, ChevronLeft, ChevronRight, ChevronDown, X } from "lucide-react";
-import { categories } from "@/types/product";
+import { fetchAllCategories, type Category } from "@/api/categories";
 
 type Product = {
   _id: string;
   model: string;
-  type: string;
+  type: Category;
   brand: string;
   name?: string;
   type_labels?: string[];
@@ -53,6 +53,10 @@ export default function ProductsPage() {
   const [showCompatibleDeviceSuggestions, setShowCompatibleDeviceSuggestions] = useState(false);
   const [isSearchingCompatibleDevices, setIsSearchingCompatibleDevices] = useState(false);
   
+  // Categorias
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  
   // Paginação
   const [pagination, setPagination] = useState<PaginationData>({
     currentPage: 1,
@@ -65,6 +69,23 @@ export default function ProductsPage() {
   
   const router = useRouter();
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Carregar categorias
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const fetchedCategories = await fetchAllCategories(token);
+        setCategories(fetchedCategories);
+      } catch (error) {
+        console.error("Erro ao carregar categorias:", error);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    loadCategories();
+  }, []);
 
   // Fechar dropdown ao clicar fora
   useEffect(() => {
@@ -246,15 +267,15 @@ export default function ProductsPage() {
                   </button>
                   {categories.map((category) => (
                     <button
-                      key={category}
+                      key={category._id}
                       type="button"
                       onClick={() => {
-                        setCategoryFilter(category);
+                        setCategoryFilter(category.name);
                         setShowCategoryDropdown(false);
                       }}
                       className="w-full text-left px-3 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none text-sm"
                     >
-                      {category}
+                      {category.name}
                     </button>
                   ))}
                 </div>
@@ -402,7 +423,7 @@ export default function ProductsPage() {
                 products.map((p, idx) => (
                   <tr key={idx} className="border-t hover:bg-gray-50">
                     <td className="p-2">{p.name}</td>
-                    <td className="p-2">{p.type}</td>
+                    <td className="p-2">{p.type?.name}</td>
                     <td className="p-2">
                       <div className="flex gap-2">
                         <Button onClick={() => openSidebar(p)} size="sm" variant="outline">
@@ -443,7 +464,7 @@ export default function ProductsPage() {
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <h3 className="font-medium">{p.name}</h3>
-                    <p className="text-sm text-gray-600">{p.type}</p>
+                    <p className="text-sm text-gray-600">{p.type?.name}</p>
                   </div>
                   <div className="flex gap-2">
                     <Button onClick={() => openSidebar(p)} size="sm" variant="outline">
@@ -543,7 +564,7 @@ export default function ProductsPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm font-medium text-gray-600">Categoria:</span>
-                  <span className="text-sm text-gray-900">{selectedProduct?.type}</span>
+                  <span className="text-sm text-gray-900">{selectedProduct?.type?.name}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm font-medium text-gray-600">Marca:</span>

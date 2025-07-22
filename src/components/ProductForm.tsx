@@ -8,8 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { searchModels, createModel, Model } from "@/api/models";
+import { searchCategories } from "@/api/categories";
 
-import { Variation, ProductFormData, categories } from "@/types/product";
+import { Variation, ProductFormData, Category } from "@/types/product";
 
 interface ProductFormProps {
   initialData?: ProductFormData;
@@ -29,7 +30,7 @@ export default function ProductForm({
   const [formData, setFormData] = useState({
     name: initialData?.name || "",
     model: initialData?.model || "",
-    type: initialData?.type || "",
+    type: initialData?.type || null,
     brand: initialData?.brand || "",
     stock: initialData?.stock || "",
     notes: initialData?.notes || "",
@@ -39,11 +40,18 @@ export default function ProductForm({
   const [newCompatibleDevice, setNewCompatibleDevice] = useState("");
 
   const [variations, setVariations] = useState<Variation[]>(initialData?.variations || []);
-  const [showCustomCategory, setShowCustomCategory] = useState(false);
-  const [customCategory, setCustomCategory] = useState("");
   const [samePriceForAll, setSamePriceForAll] = useState(false);
   const [showBrandSuggestions, setShowBrandSuggestions] = useState(false);
   const [filteredBrands, setFilteredBrands] = useState<string[]>([]);
+  
+  // Estados para busca de categorias
+  const [categorySearch, setCategorySearch] = useState(
+    typeof initialData?.type === 'object' && initialData?.type?.name ? initialData.type.name : 
+    typeof initialData?.type === 'string' ? initialData.type : ""
+  );
+  const [categorySuggestions, setCategorySuggestions] = useState<Category[]>([]);
+  const [showCategorySuggestions, setShowCategorySuggestions] = useState(false);
+  const [isSearchingCategories, setIsSearchingCategories] = useState(false);
   
   // Estados para busca de dispositivos compatíveis
   const [compatibleDeviceSuggestions, setCompatibleDeviceSuggestions] = useState<Model[]>([]);
@@ -73,9 +81,50 @@ export default function ProductForm({
     "Nothing"
   ];
 
+  // Função para buscar categorias (similar aos dispositivos compatíveis)
+  const handleCategorySearch = async (value: string) => {
+    setCategorySearch(value);
+    
+    if (value.length >= 2) {
+      setIsSearchingCategories(true);
+      try {
+        const token = localStorage.getItem("token");
+        const categories = await searchCategories(value, token);
+        setCategorySuggestions(categories);
+        setShowCategorySuggestions(categories.length > 0);
+      } catch (error) {
+        console.error("Erro ao buscar categorias:", error);
+      } finally {
+        setIsSearchingCategories(false);
+      }
+    } else {
+      setShowCategorySuggestions(false);
+      setCategorySuggestions([]);
+    }
+  };
+
+  const selectCategory = (category: Category) => {
+    setFormData({ ...formData, type: category });
+    setCategorySearch(category.name);
+    setShowCategorySuggestions(false);
+    setCategorySuggestions([]);
+  };
+
+  const handleCategoryInputChange = (value: string) => {
+    // Se o usuário está digitando uma categoria personalizada, criar um objeto temporário
+    const customCategory: Category = {
+      _id: "temp",
+      name: value,
+      synonyms: [],
+      createdAt: new Date().toISOString()
+    };
+    setFormData({ ...formData, type: value ? customCategory : null });
+    handleCategorySearch(value);
+  };
+
   useEffect(() => {
     if (formData.type || formData.model || formData.brand) {
-      const parts = [formData.type, formData.brand, formData.model].filter(Boolean);
+      const parts = [formData.type?.name || "", formData.brand, formData.model].filter(Boolean);
       const suggestedName = parts.join(" ");
       setFormData((prev) => ({ ...prev, name: suggestedName }));
     }
@@ -83,21 +132,21 @@ export default function ProductForm({
 
   useEffect(() => {
     if (initialData) {
-      const productType = initialData.type || "";
+      const productType = initialData.type;
       
       setFormData({
         name: initialData.name || "",
         model: initialData.model || "",
-        type: productType,
+        type: productType || null,
         brand: initialData.brand || "",
         stock: initialData.stock || "",
         notes: initialData.notes || "",
       });
 
-      // Verificar se a categoria é personalizada
-      if (productType && !categories.slice(0, -1).includes(productType)) {
-        setShowCustomCategory(true);
-        setCustomCategory(productType);
+      // Definir a categoria atual e inicializar busca
+      if (productType) {
+        const categoryName = typeof productType === 'object' ? productType.name : productType;
+        setCategorySearch(categoryName);
       }
 
       setVariations(initialData.variations || []);
@@ -312,39 +361,54 @@ export default function ProductForm({
         <div className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Categoria</label>
-            <select
-              name="type"
-              value={showCustomCategory ? "Outros" : (categories.includes(formData.type) ? formData.type : "")}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value === "Outros") {
-                  setShowCustomCategory(true);
-                  setFormData({ ...formData, type: customCategory });
-                } else {
-                  setShowCustomCategory(false);
-                  setCustomCategory("");
-                  setFormData({ ...formData, type: value });
-                }
-              }}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="" disabled>Selecione uma categoria</option>
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-            
-            {showCustomCategory && (
+            <div className="relative">
               <Input
-                placeholder="Digite a categoria personalizada"
-                value={customCategory}
-                onChange={(e) => {
-                  setCustomCategory(e.target.value);
-                  setFormData({ ...formData, type: e.target.value });
+                placeholder="Digite para buscar categoria (ex: Bateria, Touch, Cabo)"
+                value={categorySearch}
+                onChange={(e) => handleCategoryInputChange(e.target.value)}
+                onFocus={() => {
+                  if (categorySearch.length >= 2) {
+                    setShowCategorySuggestions(categorySuggestions.length > 0);
+                  }
+                }}
+                onBlur={() => {
+                  // Delay para permitir clique nas sugestões
+                  setTimeout(() => setShowCategorySuggestions(false), 200);
                 }}
               />
+              
+              {isSearchingCategories && (
+                <div className="absolute right-3 top-3">
+                  <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+                </div>
+              )}
+              
+              {showCategorySuggestions && categorySuggestions.length > 0 && (
+                <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-40 overflow-y-auto mt-1">
+                  {categorySuggestions.map((category) => (
+                    <button
+                      key={category._id}
+                      type="button"
+                      className="w-full text-left px-3 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none border-b border-gray-100 last:border-b-0"
+                      onClick={() => selectCategory(category)}
+                    >
+                      <div className="font-medium">{category.name}</div>
+                      {category.synonyms && category.synonyms.length > 0 && (
+                        <div className="text-sm text-gray-500">
+                          Sinônimos: {category.synonyms.slice(0, 3).join(", ")}
+                          {category.synonyms.length > 3 && "..."}
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {categorySearch.length >= 2 && categorySuggestions.length === 0 && !isSearchingCategories && (
+              <div className="text-sm text-gray-500">
+                Categoria não encontrada. Você pode criar uma categoria personalizada digitando o nome.
+              </div>
             )}
           </div>
           <label className="text-sm font-medium">Nome (Como vai aparecer na lista de produtos)</label>

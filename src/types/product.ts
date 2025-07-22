@@ -6,10 +6,18 @@ export interface Variation {
   tempImageUrl?: string;
 }
 
+export interface Category {
+  _id: string;
+  name: string;
+  synonyms: string[];
+  createdAt: string;
+  updatedAt?: string;
+}
+
 export interface ProductFormData {
   name: string;
   model: string;
-  type: string;
+  type: Category | null;
   brand: string;
   stock: string;
   notes: string;
@@ -17,17 +25,5 @@ export interface ProductFormData {
   compatible_devices: string[];
 } 
 
-export const categories = [
-  "Bateria",
-  "Touch/Display",
-  "Cabo",
-  "Carregador",
-  "Capinha",
-  "Película",
-  "Fone de Ouvido",
-  "Alto-falante",
-  "Microfone",
-  "Câmera",
-  "Placa Mãe",
-  "Outros"
-];
+// Categorias agora são carregadas dinamicamente da API
+// Veja /api/categories para gerenciar categorias
