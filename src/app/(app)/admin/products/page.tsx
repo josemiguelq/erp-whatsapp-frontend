@@ -55,7 +55,6 @@ export default function ProductsPage() {
   
   // Categorias
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loadingCategories, setLoadingCategories] = useState(true);
   
   // Paginação
   const [pagination, setPagination] = useState<PaginationData>({
@@ -79,8 +78,6 @@ export default function ProductsPage() {
         setCategories(fetchedCategories);
       } catch (error) {
         console.error("Erro ao carregar categorias:", error);
-      } finally {
-        setLoadingCategories(false);
       }
     };
 
