@@ -19,6 +19,11 @@ export interface UpdatePromptData {
   description?: string;
 }
 
+export interface PromptResponse {
+  message: string;
+  id?: string;
+}
+
 // Listar todos os prompts
 export async function fetchPrompts(): Promise<Prompt[]> {
   const response = await fetch(`${API_URL}/api/prompts`);
@@ -34,7 +39,7 @@ export async function fetchPromptByType(type: string): Promise<Prompt> {
 }
 
 // Criar novo prompt
-export async function createPrompt(data: CreatePromptData): Promise<any> {
+export async function createPrompt(data: CreatePromptData): Promise<PromptResponse> {
   const response = await fetch(`${API_URL}/api/prompts`, {
     method: 'POST',
     headers: {
@@ -52,7 +57,7 @@ export async function createPrompt(data: CreatePromptData): Promise<any> {
 }
 
 // Atualizar prompt
-export async function updatePrompt(type: string, data: UpdatePromptData): Promise<any> {
+export async function updatePrompt(type: string, data: UpdatePromptData): Promise<PromptResponse> {
   const response = await fetch(`${API_URL}/api/prompts/${type}`, {
     method: 'PUT',
     headers: {
@@ -70,7 +75,7 @@ export async function updatePrompt(type: string, data: UpdatePromptData): Promis
 }
 
 // Deletar prompt
-export async function deletePrompt(type: string): Promise<any> {
+export async function deletePrompt(type: string): Promise<PromptResponse> {
   const response = await fetch(`${API_URL}/api/prompts/${type}`, {
     method: 'DELETE',
   });

@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { fetchPrompts, createPrompt, updatePrompt, deletePrompt, type Prompt, type CreatePromptData, type UpdatePromptData } from "@/api/prompts";
-import { Plus, Edit, Trash2, Save, X } from "lucide-react";
+import { Plus, Edit, Trash2, Save } from "lucide-react";
 
 export default function PromptsPage() {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
@@ -56,8 +56,8 @@ export default function PromptsPage() {
       setNewPrompt({ type: "", content: "", description: "" });
       setIsCreateDialogOpen(false);
       loadPrompts();
-    } catch (error: any) {
-      alert(error.message);
+    } catch (error: unknown) {
+      alert(error instanceof Error ? error.message : "Erro desconhecido");
     }
   };
 
@@ -74,8 +74,8 @@ export default function PromptsPage() {
       setEditingPrompt(null);
       setIsEditDialogOpen(false);
       loadPrompts();
-    } catch (error: any) {
-      alert(error.message);
+    } catch (error: unknown) {
+      alert(error instanceof Error ? error.message : "Erro desconhecido");
     }
   };
 
