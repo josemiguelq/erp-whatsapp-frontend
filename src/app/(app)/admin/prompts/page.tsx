@@ -85,8 +85,8 @@ export default function PromptsPage() {
     try {
       await deletePrompt(type);
       loadPrompts();
-    } catch (error: any) {
-      alert(error.message);
+    } catch (error: unknown) {
+      alert(error instanceof Error ? error.message : "Erro desconhecido");
     }
   };
 
