@@ -22,6 +22,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     { name: "Modelos", href: "/admin/models" },
     { name: "Clientes", href: "/admin/customers" },
     { name: "WhatsApp Agent", href: "/admin/whatsapp" },
+    { name: "Prompts IA", href: "/admin/prompts" },
   ];
 
   return (
