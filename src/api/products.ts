@@ -106,3 +106,57 @@ export async function deleteProduct(id: string, token: string|null) {
 
   return res.json();
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function importCsv(csvData: string, token: string|null): Promise<any> {
+  const res = await fetch(`${API_URL}/api/products/import-csv`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ csvData }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Erro ao importar CSV");
+  }
+
+  return res.json();
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function parseCsv(csvData: string, token: string|null): Promise<any> {
+  const res = await fetch(`${API_URL}/api/products/parse-csv`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ csvData }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Erro ao fazer parse do CSV");
+  }
+
+  return res.json();
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function importParsedProducts(products: any[], token: string|null): Promise<any> {
+  const res = await fetch(`${API_URL}/api/products/import`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ products }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Erro ao importar produtos");
+  }
+
+  return res.json();
+}

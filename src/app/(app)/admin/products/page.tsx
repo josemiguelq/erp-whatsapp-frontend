@@ -2,13 +2,14 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { fetchProducts, deleteProduct } from "@/api/products";
+import { fetchProducts, deleteProduct, importCsv } from "@/api/products";
 import { searchModels, type Model } from "@/api/models";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, Eye, Edit, Trash2, Search, ChevronLeft, ChevronRight, ChevronDown, X } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, Search, ChevronLeft, ChevronRight, ChevronDown, X, Upload } from "lucide-react";
 import { fetchAllCategories, type Category } from "@/api/categories";
 
 type Product = {
@@ -40,6 +41,12 @@ export default function ProductsPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  
+  // Estados para importação de CSV
+  const [csvImportOpen, setCsvImportOpen] = useState(false);
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [csvImporting, setCsvImporting] = useState(false);
+  const [csvImportResult, setCsvImportResult] = useState<any>(null);
   
   // Filtros
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -214,13 +221,72 @@ export default function ProductsPage() {
     }
   };
 
+  const handleCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === 'text/csv') {
+      setCsvFile(file);
+    } else {
+      alert('Por favor, selecione um arquivo CSV válido.');
+      event.target.value = '';
+    }
+  };
+
+  const handleCsvImport = async () => {
+    if (!csvFile) {
+      alert('Por favor, selecione um arquivo CSV.');
+      return;
+    }
+
+    setCsvImporting(true);
+    try {
+      const text = await csvFile.text();
+      const token = localStorage.getItem("token");
+      const result = await importCsv(text, token);
+      
+      setCsvImportResult(result);
+      setCsvFile(null);
+      
+      // Recarregar produtos após importação
+      loadProducts(1);
+      
+      alert(`Importação concluída! ${result.processed} produtos processados.`);
+    } catch (error) {
+      console.error("Erro ao importar CSV:", error);
+      alert("Erro ao importar CSV. Verifique o formato do arquivo.");
+    } finally {
+      setCsvImporting(false);
+    }
+  };
+
+  const resetCsvImport = () => {
+    setCsvFile(null);
+    setCsvImportResult(null);
+    setCsvImportOpen(false);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-xl font-bold">Produtos</h1>
-        <Button onClick={() => router.push("/admin/products/new")} className="w-full sm:w-auto">
-          <Plus className="w-4 h-4 mr-2" /> Novo
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => router.push("/admin/products/import")} 
+            className="w-full sm:w-auto"
+          >
+            <Upload className="w-4 h-4 mr-2" /> Importar CSV
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => setCsvImportOpen(true)} 
+            className="w-full sm:w-auto"
+          >
+            <Upload className="w-4 h-4 mr-2" /> Importar Direto
+          </Button>
+          <Button onClick={() => router.push("/admin/products/new")} className="w-full sm:w-auto">
+            <Plus className="w-4 h-4 mr-2" /> Novo
+          </Button>
+        </div>
       </div>
 
       {/* Filtros */}
@@ -715,6 +781,73 @@ export default function ProductsPage() {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Modal de Importação CSV */}
+      <Dialog open={csvImportOpen} onOpenChange={setCsvImportOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Importar Produtos via CSV</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-gray-600 mb-4">
+                Selecione um arquivo CSV para importar produtos. O arquivo deve conter as colunas:
+                Keyword, Text, Folder.
+              </p>
+              
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                <div className="text-sm">
+                  <label htmlFor="csv-file" className="cursor-pointer text-blue-600 hover:text-blue-500">
+                    Clique para selecionar um arquivo CSV
+                  </label>
+                  <input
+                    id="csv-file"
+                    type="file"
+                    accept=".csv"
+                    onChange={handleCsvUpload}
+                    className="hidden"
+                  />
+                  <p className="text-gray-500 mt-1">ou arraste e solte aqui</p>
+                </div>
+              </div>
+              
+              {csvFile && (
+                <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                  <p className="text-sm text-green-800">
+                    📄 {csvFile.name} ({(csvFile.size / 1024).toFixed(1)} KB)
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {csvImportResult && (
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
+                <h4 className="font-medium text-blue-900">Resultado da Importação:</h4>
+                <ul className="text-sm text-blue-800 mt-1">
+                  <li>✅ {csvImportResult.processed} produtos processados</li>
+                  {csvImportResult.errors > 0 && (
+                    <li>⚠️ {csvImportResult.errors} erros encontrados</li>
+                  )}
+                </ul>
+              </div>
+            )}
+
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={resetCsvImport}>
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleCsvImport} 
+                disabled={!csvFile || csvImporting}
+              >
+                {csvImporting ? "Importando..." : "Importar"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
